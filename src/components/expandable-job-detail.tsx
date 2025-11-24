@@ -9,6 +9,7 @@ import { Id } from "../../convex/_generated/dataModel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog";
+import { AIToolbar } from "@/components/ai-toolbar";
 import ReactMarkdown from "react-markdown";
 import {
   IconExternalLink,
@@ -152,6 +153,9 @@ export function ExpandableJobDetail({
                   <Badge variant="outline">{job.location}</Badge>
                 )}
               </motion.div>
+
+              {/* AI Assistant Toolbar */}
+              <AIToolbar jobId={job._id} />
 
               {/* Content - Fades in */}
               <motion.div

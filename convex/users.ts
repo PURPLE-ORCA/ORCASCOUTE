@@ -8,7 +8,7 @@ import { mutation, query } from "./_generated/server";
  * to look up identities.
  *
  * Keep in mind that `UserIdentity` has a number of optional fields, the
- * ones available depend on the identity provider chosen. 
+ * ones available depend on the identity provider chosen.
  */
 export const store = mutation({
   args: {},
@@ -67,6 +67,18 @@ export const getViewer = query({
       )
       .unique();
     return user;
+  },
+});
+
+export const getByToken = query({
+  args: { tokenIdentifier: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", args.tokenIdentifier)
+      )
+      .unique();
   },
 });
 

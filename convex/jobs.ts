@@ -28,6 +28,33 @@ export const list = query({
 });
 
 /**
+ * Get a single job by ID
+ */
+export const get = query({
+  args: { id: v.id("jobs") },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return null;
+
+    const job = await ctx.db.get(args.id);
+    if (!job) return null;
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier)
+      )
+      .unique();
+
+    if (!user || job.userId !== user._id) {
+      return null;
+    }
+
+    return job;
+  },
+});
+
+/**
  * Create a new job
  */
 export const create = mutation({
