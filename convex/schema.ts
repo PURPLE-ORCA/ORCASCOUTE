@@ -5,6 +5,7 @@ export default defineSchema({
   users: defineTable({
     name: v.string(),
     email: v.string(),
+    tokenIdentifier: v.string(), // Clerk ID
     title: v.optional(v.string()),
     skills: v.optional(v.array(v.string())),
     timezone: v.optional(v.string()),
@@ -16,7 +17,9 @@ export default defineSchema({
         language: v.optional(v.string()),
       })
     ),
-  }).index("by_email", ["email"]),
+  })
+    .index("by_email", ["email"])
+    .index("by_token", ["tokenIdentifier"]),
 
   jobs: defineTable({
     userId: v.id("users"),
