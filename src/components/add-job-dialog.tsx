@@ -152,7 +152,7 @@ export function AddJobDialog({ children }: { children: React.ReactNode }) {
                   <FormItem>
                     <FormLabel>Location</FormLabel>
                     <FormControl>
-                      <Input placeholder="San Francisco, CA" {...field} />
+                      <Input placeholder="Rabat, Morocco" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -166,7 +166,7 @@ export function AddJobDialog({ children }: { children: React.ReactNode }) {
                   <FormItem>
                     <FormLabel>Salary</FormLabel>
                     <FormControl>
-                      <Input placeholder="$150k - $180k" {...field} />
+                      <Input placeholder="9k MAD - 16k MAD" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

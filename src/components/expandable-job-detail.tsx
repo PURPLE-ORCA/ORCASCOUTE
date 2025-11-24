@@ -1,13 +1,14 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useOnClickOutside } from "usehooks-ts";
 import { useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog";
 import ReactMarkdown from "react-markdown";
 import {
   IconExternalLink,
@@ -43,6 +44,8 @@ export function ExpandableJobDetail({
 }: ExpandableJobDetailProps) {
   const ref = useRef<HTMLDivElement>(null);
   const deleteJob = useMutation(api.jobs.remove);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useOnClickOutside(ref, onClose);
 
@@ -61,13 +64,15 @@ export function ExpandableJobDetail({
 
   const handleDelete = async () => {
     if (!job) return;
-    if (!confirm("Are you sure you want to delete this job?")) return;
 
+    setIsDeleting(true);
     try {
       await deleteJob({ id: job._id });
       onClose();
     } catch (error) {
       console.error("Failed to delete job:", error);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -117,7 +122,11 @@ export function ExpandableJobDetail({
                   >
                     <IconEdit className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={handleDelete}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowDeleteDialog(true)}
+                  >
                     <IconTrash className="h-4 w-4" />
                   </Button>
                   <Button variant="ghost" size="icon" onClick={onClose}>
@@ -191,6 +200,16 @@ export function ExpandableJobDetail({
           </div>
         )}
       </AnimatePresence>
+
+      <DeleteConfirmationDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        onConfirm={handleDelete}
+        title="Delete Job"
+        itemName={job?.companyName}
+        description={`Are you sure you want to delete the job application for ${job?.companyName}? This action cannot be undone.`}
+        isLoading={isDeleting}
+      />
     </>
   );
 }
