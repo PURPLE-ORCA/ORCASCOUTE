@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useAction } from "convex/react";
+import { useAction, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 import {
@@ -25,13 +25,17 @@ import {
   IconCheck,
   IconAlertCircle,
 } from "@tabler/icons-react";
-// Toast functionality - using alert for now
+import { toast } from "sonner";
 
 type AIGenerationDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   jobId: Id<"jobs">;
   type: "email" | "coverLetter";
+  initialContent?: {
+    content: string;
+    subject?: string;
+  } | null;
 };
 
 type DialogState = "config" | "generating" | "preview" | "error";
@@ -57,15 +61,18 @@ export function AIGenerationDialog({
   onOpenChange,
   jobId,
   type,
+  initialContent,
 }: AIGenerationDialogProps) {
-  // const { toast } = useToast();
   const generateEmail = useAction(api.ai.generateEmail);
   const generateCoverLetter = useAction(api.ai.generateCoverLetter);
+  const saveContent = useMutation(api.ai.saveGeneratedContent);
 
   // State
   const [state, setState] = useState<DialogState>("config");
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
   const [error, setError] = useState<string>("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   // Email config
   const [cvId, setCvId] = useState<Id<"cv_versions"> | undefined>();
@@ -90,13 +97,37 @@ export function AIGenerationDialog({
   } | null>(null);
   const [generatedCoverLetter, setGeneratedCoverLetter] = useState<string>("");
 
-  // Reset state when dialog opens/closes
+  // Sync state with initialContent when dialog opens or initialContent changes
+  useEffect(() => {
+    if (open && initialContent) {
+      setState("preview");
+      if (type === "email") {
+        setGeneratedEmail({
+          subject: initialContent.subject || "",
+          body: initialContent.content,
+        });
+      } else {
+        setGeneratedCoverLetter(initialContent.content);
+      }
+    } else if (open && !initialContent) {
+      // Only reset to config if we are opening fresh without content
+      // We don't want to reset if we are just switching tabs or something
+      // But for now, let's assume if no initialContent, we start at config
+      if (state !== "preview" && state !== "generating") {
+        setState("config");
+      }
+    }
+  }, [open, initialContent, type]);
+
+  // Reset state when dialog closes
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen) {
-      setState("config");
+      // Delay reset slightly to allow animation to finish, or just reset immediately
+      // For simplicity, we reset immediately but maybe we should wait?
+      // Actually, let's just reset when opening if needed.
+      // But to be safe, let's clear errors and copy state
       setError("");
-      setGeneratedEmail(null);
-      setGeneratedCoverLetter("");
+      setCopied(false);
     }
     onOpenChange(newOpen);
   };
@@ -130,17 +161,19 @@ export function AIGenerationDialog({
         body: result.body,
       });
       setState("preview");
+      toast.success("Email generated successfully!");
     } catch (err) {
       clearInterval(interval);
       setError(err instanceof Error ? err.message : "Failed to generate email");
       setState("error");
+      toast.error("Failed to generate email");
     }
   };
 
   // Generate cover letter
   const handleGenerateCoverLetter = async () => {
     if (!coverLetterCvId) {
-      alert("Please select a CV to generate a cover letter.");
+      toast.error("Please select a CV to generate a cover letter.");
       return;
     }
 
@@ -159,12 +192,14 @@ export function AIGenerationDialog({
       clearInterval(interval);
       setGeneratedCoverLetter(result.content);
       setState("preview");
+      toast.success("Cover letter generated successfully!");
     } catch (err) {
       clearInterval(interval);
       setError(
         err instanceof Error ? err.message : "Failed to generate cover letter"
       );
       setState("error");
+      toast.error("Failed to generate cover letter");
     }
   };
 
@@ -176,16 +211,36 @@ export function AIGenerationDialog({
         : generatedCoverLetter;
 
     navigator.clipboard.writeText(content);
-    alert(
-      "✅ Copied to clipboard! Paste it into your email client or document."
-    );
+    setCopied(true);
+    toast.success("Copied to clipboard!");
+    setTimeout(() => setCopied(false), 2000);
   };
 
-  // Regenerate
-  const handleRegenerate = () => {
-    setState("config");
-    setGeneratedEmail(null);
-    setGeneratedCoverLetter("");
+  // Save content
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+      if (type === "email" && generatedEmail) {
+        await saveContent({
+          jobId,
+          type: "email",
+          content: generatedEmail.body,
+          subject: generatedEmail.subject,
+        });
+      } else if (type === "coverLetter" && generatedCoverLetter) {
+        await saveContent({
+          jobId,
+          type: "coverLetter",
+          content: generatedCoverLetter,
+        });
+      }
+      toast.success("Content saved successfully!");
+    } catch (err) {
+      console.error("Failed to save content:", err);
+      toast.error("Failed to save content. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // Toggle focus area
@@ -397,13 +452,24 @@ export function AIGenerationDialog({
           {state === "generating" && (
             <motion.div
               key="generating"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="flex flex-col items-center justify-center py-12"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex flex-col items-center justify-center py-12 space-y-4"
             >
-              <IconSparkles className="h-16 w-16 text-primary animate-pulse mb-4" />
-              <p className="text-sm text-muted-foreground">
+              <div className="relative w-16 h-16">
+                <motion.div
+                  className="absolute inset-0 border-4 border-primary/30 rounded-full"
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ repeat: Infinity, duration: 2 }}
+                />
+                <motion.div
+                  className="absolute inset-0 border-4 border-t-primary rounded-full"
+                  animate={{ rotate: 360 }}
+                  transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                />
+              </div>
+              <p className="text-lg font-medium text-primary animate-pulse">
                 {LOADING_MESSAGES[loadingMessageIndex]}
               </p>
             </motion.div>
@@ -418,50 +484,50 @@ export function AIGenerationDialog({
               exit={{ opacity: 0, y: -10 }}
               className="space-y-4"
             >
-              {type === "email" && generatedEmail ? (
-                <>
-                  <div className="space-y-2">
-                    <Label>Subject</Label>
-                    <div className="rounded-md border bg-muted p-3">
-                      <p className="text-sm">{generatedEmail.subject}</p>
+              <div className="p-4 bg-muted/50 rounded-lg border">
+                {type === "email" ? (
+                  <div className="space-y-4">
+                    <div>
+                      <Label className="text-xs text-muted-foreground uppercase tracking-wider">
+                        Subject
+                      </Label>
+                      <p className="font-medium text-lg">
+                        {generatedEmail?.subject}
+                      </p>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground uppercase tracking-wider">
+                        Body
+                      </Label>
+                      <div className="mt-2 whitespace-pre-wrap font-sans text-sm leading-relaxed">
+                        {generatedEmail?.body}
+                      </div>
                     </div>
                   </div>
-
-                  <div className="space-y-2">
-                    <Label>Email Body</Label>
-                    <div className="rounded-md border bg-muted p-4 max-h-96 overflow-y-auto">
-                      <pre className="text-sm whitespace-pre-wrap font-sans">
-                        {generatedEmail.body}
-                      </pre>
-                    </div>
+                ) : (
+                  <div className="whitespace-pre-wrap font-sans text-sm leading-relaxed">
+                    {generatedCoverLetter}
                   </div>
-                </>
-              ) : (
-                <div className="space-y-2">
-                  <Label>Cover Letter</Label>
-                  <div className="rounded-md border bg-muted p-6 max-h-96 overflow-y-auto">
-                    <pre className="text-sm whitespace-pre-wrap font-sans">
-                      {generatedCoverLetter}
-                    </pre>
-                  </div>
-                </div>
-              )}
+                )}
+              </div>
 
-              <div className="flex justify-between gap-2">
-                <Button variant="outline" onClick={handleRegenerate}>
-                  <IconRefresh className="mr-2 h-4 w-4" />
+              <div className="flex justify-end gap-3 mt-6">
+                <Button variant="outline" onClick={() => setState("config")}>
+                  <IconRefresh className="w-4 h-4 mr-2" />
                   Regenerate
                 </Button>
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={handleCopy}>
-                    <IconCopy className="mr-2 h-4 w-4" />
-                    Copy
-                  </Button>
-                  <Button onClick={() => onOpenChange(false)}>
-                    <IconCheck className="mr-2 h-4 w-4" />
-                    Done
-                  </Button>
-                </div>
+                <Button variant="outline" onClick={handleCopy}>
+                  {copied ? (
+                    <IconCheck className="w-4 h-4 mr-2" />
+                  ) : (
+                    <IconCopy className="w-4 h-4 mr-2" />
+                  )}
+                  {copied ? "Copied" : "Copy"}
+                </Button>
+                <Button onClick={handleSave} disabled={isSaving}>
+                  <IconDeviceFloppy className="w-4 h-4 mr-2" />
+                  {isSaving ? "Saving..." : "Save"}
+                </Button>
               </div>
             </motion.div>
           )}
@@ -470,25 +536,21 @@ export function AIGenerationDialog({
           {state === "error" && (
             <motion.div
               key="error"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="space-y-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex flex-col items-center justify-center py-8 space-y-4 text-center"
             >
-              <div className="rounded-md border border-red-500/20 bg-red-500/10 p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <IconAlertCircle className="h-5 w-5 text-red-500" />
-                  <p className="font-semibold text-sm">Generation Failed</p>
-                </div>
-                <p className="text-sm text-muted-foreground">{error}</p>
+              <div className="p-3 bg-red-100 dark:bg-red-900/20 rounded-full">
+                <IconAlertCircle className="w-8 h-8 text-red-600 dark:text-red-400" />
               </div>
-
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => onOpenChange(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={() => setState("config")}>Try Again</Button>
+              <div className="space-y-2">
+                <h3 className="font-medium text-lg">Generation Failed</h3>
+                <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                  {error}
+                </p>
               </div>
+              <Button onClick={() => setState("config")}>Try Again</Button>
             </motion.div>
           )}
         </AnimatePresence>

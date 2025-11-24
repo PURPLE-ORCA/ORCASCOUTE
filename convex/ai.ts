@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { action } from "./_generated/server";
+import { action, mutation, query } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 import { Id } from "./_generated/dataModel";
 
@@ -231,10 +231,10 @@ export const generateCoverLetter = action({
               temperature: 0.7,
               maxOutputTokens:
                 args.length === "detailed"
-                  ? 5000
+                  ? 8000
                   : args.length === "medium"
-                  ? 3000
-                  : 2000,
+                  ? 5000
+                  : 3000,
             },
           }),
         }
@@ -280,6 +280,89 @@ export const generateCoverLetter = action({
         }`
       );
     }
+  },
+});
+
+/**
+ * Save generated content (email or cover letter)
+ */
+export const saveGeneratedContent = mutation({
+  args: {
+    jobId: v.id("jobs"),
+    type: v.union(v.literal("email"), v.literal("coverLetter")),
+    content: v.string(),
+    subject: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthenticated");
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier)
+      )
+      .unique();
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    // Check if content already exists for this job and type
+    const existing = await ctx.db
+      .query("generated_content")
+      .withIndex("by_job_and_type", (q) =>
+        q.eq("jobId", args.jobId).eq("type", args.type)
+      )
+      .unique();
+
+    if (existing) {
+      // Update existing content
+      await ctx.db.patch(existing._id, {
+        content: args.content,
+        subject: args.subject,
+        createdAt: Date.now(), // Update timestamp
+      });
+      return existing._id;
+    } else {
+      // Create new content
+      const id = await ctx.db.insert("generated_content", {
+        userId: user._id,
+        jobId: args.jobId,
+        type: args.type,
+        content: args.content,
+        subject: args.subject,
+        createdAt: Date.now(),
+      });
+      return id;
+    }
+  },
+});
+
+/**
+ * Get generated content for a job
+ */
+export const getGeneratedContent = query({
+  args: {
+    jobId: v.id("jobs"),
+    type: v.union(v.literal("email"), v.literal("coverLetter")),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return null;
+    }
+
+    const content = await ctx.db
+      .query("generated_content")
+      .withIndex("by_job_and_type", (q) =>
+        q.eq("jobId", args.jobId).eq("type", args.type)
+      )
+      .unique();
+
+    return content;
   },
 });
 

@@ -1,7 +1,12 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { IconSparkles, IconMail, IconFileText } from "@tabler/icons-react";
+import {
+  IconSparkles,
+  IconMail,
+  IconFileText,
+  IconEye,
+} from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
@@ -18,10 +23,25 @@ export function AIToolbar({ jobId }: AIToolbarProps) {
   const user = useQuery(api.users.getViewer);
   const cvs = useQuery(api.cvs.getCVs);
   const usage = useQuery(api.aiUsage.getMonthlyUsage);
+
+  // Fetch saved content
+  const savedEmail = useQuery(api.ai.getGeneratedContent, {
+    jobId,
+    type: "email",
+  });
+  const savedCoverLetter = useQuery(api.ai.getGeneratedContent, {
+    jobId,
+    type: "coverLetter",
+  });
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<"email" | "coverLetter">(
     "email"
   );
+  const [dialogInitialContent, setDialogInitialContent] = useState<{
+    content: string;
+    subject?: string;
+  } | null>(null);
 
   // Check if user has profile and CV
   const hasProfile = user?.title || (user?.skills && user.skills.length > 0);
@@ -34,8 +54,12 @@ export function AIToolbar({ jobId }: AIToolbarProps) {
   const isLowQuota =
     usage && usage.remaining !== undefined && usage.remaining <= 5;
 
-  const handleOpenDialog = (type: "email" | "coverLetter") => {
+  const handleOpenDialog = (
+    type: "email" | "coverLetter",
+    initialContent?: { content: string; subject?: string } | null
+  ) => {
     setDialogType(type);
+    setDialogInitialContent(initialContent || null);
     setDialogOpen(true);
   };
 
@@ -119,48 +143,78 @@ export function AIToolbar({ jobId }: AIToolbarProps) {
         animate={{ opacity: 1, y: 0 }}
         className="rounded-lg border border-primary/20 bg-linear-to-r from-primary/5 to-purple-500/5 p-4 backdrop-blur-sm"
       >
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <IconSparkles className="h-5 w-5 text-primary" />
             <h3 className="font-semibold text-sm">AI Assistant</h3>
           </div>
           {usage && (
-            <span
-              className={`text-xs font-medium ${
-                isLowQuota ? "text-yellow-500" : "text-muted-foreground"
-              }`}
-            >
-              {usage.remaining}/{usage.limit} uses left
-            </span>
+            <div className="text-xs text-muted-foreground">
+              <span
+                className={
+                  isLowQuota ? "text-yellow-500 font-medium" : "text-primary"
+                }
+              >
+                {usage.remaining}
+              </span>{" "}
+              generations left
+            </div>
           )}
         </div>
 
-        <div className="flex gap-2">
+        <div className="grid grid-cols-2 gap-3">
           <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleOpenDialog("email")}
-            className="flex-1"
+            variant={savedEmail ? "secondary" : "outline"}
+            className="w-full justify-start h-auto py-3 px-4"
+            onClick={() =>
+              handleOpenDialog(
+                "email",
+                savedEmail
+                  ? { content: savedEmail.content, subject: savedEmail.subject }
+                  : null
+              )
+            }
           >
-            <IconMail className="mr-2 h-4 w-4" />
-            Generate Email
+            {savedEmail ? (
+              <IconEye className="mr-2 h-4 w-4 text-primary" />
+            ) : (
+              <IconMail className="mr-2 h-4 w-4" />
+            )}
+            <div className="flex flex-col items-start text-left">
+              <span className="text-sm font-medium">
+                {savedEmail ? "View Saved Email" : "Generate Email"}
+              </span>
+              <span className="text-xs text-muted-foreground font-normal">
+                {savedEmail ? "Open saved draft" : "Personalized outreach"}
+              </span>
+            </div>
           </Button>
+
           <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleOpenDialog("coverLetter")}
-            className="flex-1"
+            variant={savedCoverLetter ? "secondary" : "outline"}
+            className="w-full justify-start h-auto py-3 px-4"
+            onClick={() =>
+              handleOpenDialog(
+                "coverLetter",
+                savedCoverLetter ? { content: savedCoverLetter.content } : null
+              )
+            }
           >
-            <IconFileText className="mr-2 h-4 w-4" />
-            Cover Letter
+            {savedCoverLetter ? (
+              <IconEye className="mr-2 h-4 w-4 text-primary" />
+            ) : (
+              <IconFileText className="mr-2 h-4 w-4" />
+            )}
+            <div className="flex flex-col items-start text-left">
+              <span className="text-sm font-medium">
+                {savedCoverLetter ? "View Saved Letter" : "Cover Letter"}
+              </span>
+              <span className="text-xs text-muted-foreground font-normal">
+                {savedCoverLetter ? "Open saved draft" : "Tailored to job"}
+              </span>
+            </div>
           </Button>
         </div>
-
-        {isLowQuota && (
-          <p className="text-xs text-yellow-500 mt-2">
-            ⚠️ Only {usage?.remaining} generations remaining this month
-          </p>
-        )}
       </motion.div>
 
       <AIGenerationDialog
@@ -168,6 +222,7 @@ export function AIToolbar({ jobId }: AIToolbarProps) {
         onOpenChange={setDialogOpen}
         jobId={jobId}
         type={dialogType}
+        initialContent={dialogInitialContent}
       />
     </>
   );

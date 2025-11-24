@@ -95,6 +95,17 @@ export default defineSchema({
     resultMeta: v.optional(v.any()), // size, success boolean
   }).index("by_user_timestamp", ["userId", "timestamp"]),
 
+  generated_content: defineTable({
+    userId: v.id("users"),
+    jobId: v.id("jobs"),
+    type: v.union(v.literal("email"), v.literal("coverLetter")),
+    content: v.string(),
+    subject: v.optional(v.string()), // Only for emails
+    createdAt: v.number(),
+  })
+    .index("by_job_and_type", ["jobId", "type"])
+    .index("by_user", ["userId"]),
+
   activities: defineTable({
     userId: v.id("users"),
     type: v.string(), // applied, updated-status, ai-generated
