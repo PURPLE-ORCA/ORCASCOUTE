@@ -286,14 +286,6 @@ function buildEmailPrompt(params: {
 }): string {
   const { job, user, cvText, tone, additionalContext } = params;
 
-  const toneInstructions = {
-    professional: "Use a formal, professional tone. Be respectful and concise.",
-    friendly:
-      "Use a warm, approachable tone while maintaining professionalism.",
-    enthusiastic:
-      "Use an energetic, passionate tone that shows genuine excitement about the opportunity.",
-  };
-
   return `You are a professional career advisor helping a job seeker write an email to a recruiter.
 
 Job Details:
@@ -301,17 +293,18 @@ Job Details:
 - Position: ${job.title}
 ${job.url ? `- Job URL: ${job.url}` : ""}
 ${job.location ? `- Location: ${job.location}` : ""}
-${job.salary ? `- Salary: ${job.salary}` : ""}
 
 User Profile:
 - Name: ${user.name}
+- Email: ${user.email}
+- Phone: ${user.phone || "[Phone Number]"}
+${user.portfolioUrl ? `- Portfolio/GitHub: ${user.portfolioUrl}` : ""}
 ${user.title ? `- Current Title: ${user.title}` : ""}
 ${
   user.skills && user.skills.length > 0
     ? `- Skills: ${user.skills.join(", ")}`
     : ""
 }
-${user.defaultSignature ? `- Signature: ${user.defaultSignature}` : ""}
 
 ${
   cvText
@@ -321,17 +314,21 @@ ${
 
 ${additionalContext ? `Additional Context: ${additionalContext}` : ""}
 
-Tone: ${toneInstructions[tone]}
+Selected Tone: ${tone}
 
-Generate a professional email expressing interest in the position. Follow these guidelines:
-1. Start with a clear subject line (format: "Subject: [your subject]")
-2. Keep the email concise (150-250 words)
-3. Highlight 2-3 relevant skills or experiences that match the job
-4. Show genuine interest in the company and role
-5. Include a clear call to action (e.g., request for interview, availability to discuss)
-6. End with the user's signature if provided, otherwise use "Best regards, ${
-    user.name
-  }"
+STRICTLY FOLLOW THESE RULES FOR THE EMAIL:
+1. Keep it short, polite, and confident.
+2. Mention the position title and company name.
+3. Explicitly state that the CV and cover letter are attached.
+4. Include availability for an interview.
+5. Tone must be professional but warm, not robotic.
+6. NO clichés like "I have the honor..." or overly formal archaic phrasing.
+7. Optional: Include one short line showing relevance to the job/company.
+8. End with the signature block:
+   ${user.name}
+   ${user.phone || "[Phone Number]"}
+   ${user.email}
+   ${user.portfolioUrl ? user.portfolioUrl : ""}
 
 Format the response as:
 Subject: [subject line]
@@ -348,14 +345,6 @@ function buildCoverLetterPrompt(params: {
 }): string {
   const { job, user, cvText, length, focusAreas } = params;
 
-  const lengthInstructions = {
-    short: "Keep it to 1 page (approximately 250-300 words, 3 paragraphs)",
-    medium:
-      "Write a standard cover letter (approximately 350-450 words, 4 paragraphs)",
-    detailed:
-      "Write a comprehensive cover letter (approximately 500-600 words, 5 paragraphs)",
-  };
-
   return `You are a professional career advisor helping a job seeker write a cover letter.
 
 Job Details:
@@ -368,6 +357,7 @@ ${job.notes ? `- Job Notes: ${job.notes}` : ""}
 User Profile:
 - Name: ${user.name}
 - Email: ${user.email}
+- Phone: ${user.phone || "[Phone Number]"}
 ${user.title ? `- Current Title: ${user.title}` : ""}
 ${
   user.skills && user.skills.length > 0
@@ -378,25 +368,54 @@ ${
 CV Content:
 ${cvText}
 
-Focus Areas (prioritize these in the letter):
+Focus Areas:
 ${
   focusAreas.length > 0
     ? focusAreas.map((area, i) => `${i + 1}. ${area}`).join("\n")
     : "General experience and skills"
 }
 
-Length: ${lengthInstructions[length]}
+Length: ${length}
 
-Generate a professional cover letter following these guidelines:
-1. Use proper business letter format with contact information and date
-2. Address to "Hiring Manager" (or specific name if mentioned in job notes)
-3. Opening paragraph: Express interest and briefly state why you're a good fit
-4. Body paragraphs: Highlight relevant experience, skills, and achievements from the CV that match the job requirements
-5. Focus on the specified focus areas
-6. Closing paragraph: Express enthusiasm, mention availability, and thank them
-7. Sign off with "Sincerely," followed by the user's name
+STRICTLY FOLLOW THESE RULES FOR THE COVER LETTER:
 
-Make it compelling, specific to this job, and demonstrate clear value proposition.`;
+✅ STRUCTURE
+1. Subject line (Objet)
+2. Professional greeting
+3. Paragraph 1: Who I am + what I’m applying for
+4. Paragraph 2: Experience + relevant technologies (highlight real projects)
+5. Paragraph 3: Relevant projects + results (emphasize autonomy, delivery, deadlines, collaboration)
+6. Paragraph 4: Why this company + motivation
+7. Closing line + availability
+8. Signature
+
+✅ TONE REQUIREMENTS
+- Professional, confident, smooth, and natural.
+- Assertive but not arrogant.
+- NO exaggerated formal French/English phrasing.
+- NO slang.
+- NO stiff admin-style phrasing.
+- NO begging for the job or sounding unsure.
+- NO overuse of "I would like" or "I wish".
+- Do NOT write like a student with no confidence.
+
+✅ STYLE RULES
+- Highlight real projects.
+- Mention relevant tech stack naturally without listing it like a CV.
+- Keep sentences clear and not too long.
+- NO spelling or grammar mistakes.
+- NO overuse of buzzwords.
+- Do NOT copy CV bullet points.
+
+✅ CUSTOMIZATION RULES
+Adapt based on the job details:
+- If React/Laravel/Full-Stack: Emphasize full-stack work and app features.
+- If SEO/WordPress: Emphasize blog, optimization, on-page & technical SEO.
+- If Maintenance/Support: Emphasize fixing bugs, evolving apps, reliability.
+- If Branding/Content: Emphasize creativity, digital presence, visuals.
+- If years of experience mentioned: Reposition as practical experience, real delivered projects, and ability to ramp up fast.
+
+Generate a professional cover letter following these strict guidelines.`;
 }
 
 function parseGeneratedEmail(text: string): {
