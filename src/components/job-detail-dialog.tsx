@@ -73,7 +73,7 @@ export function JobDetailDialog({
   open,
   onOpenChange,
 }: JobDetailDialogProps) {
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(true);
   const updateJob = useMutation(api.jobs.update);
   const deleteJob = useMutation(api.jobs.remove);
 
@@ -285,7 +285,7 @@ export function JobDetailDialog({
                   type="button"
                   variant="outline"
                   onClick={() => {
-                    setIsEditing(false);
+                    onOpenChange(false);
                     form.reset();
                   }}
                 >
