@@ -2,6 +2,7 @@
 
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
 import { UserMenu } from "@/components/user-menu";
+import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 import {
   IconBriefcase,
   IconUser,
@@ -56,7 +57,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               ))}
             </div>
           </div>
-          <div className="px-2">
+          <div className="flex flex-col gap-4 px-2">
+            <AnimatedThemeToggler className="flex h-10 w-10 items-center justify-center rounded-md border bg-background text-foreground transition-colors hover:bg-accent" />
             <UserMenu />
           </div>
         </SidebarBody>
