@@ -47,11 +47,15 @@ export function ExpandableJobDetail({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  useOnClickOutside(ref, onClose);
+  useOnClickOutside(ref as React.RefObject<HTMLElement>, () => {
+    if (!showDeleteDialog) {
+      onClose();
+    }
+  });
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
+      if (event.key === "Escape" && !showDeleteDialog) {
         onClose();
       }
     }
