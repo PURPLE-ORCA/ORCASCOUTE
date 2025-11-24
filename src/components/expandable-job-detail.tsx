@@ -48,7 +48,17 @@ export function ExpandableJobDetail({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  useOnClickOutside(ref as React.RefObject<HTMLElement>, () => {
+  useOnClickOutside(ref as React.RefObject<HTMLElement>, (event) => {
+    // Ignore clicks inside dialogs or select dropdowns (which are in portals)
+    const target = event.target as HTMLElement;
+    if (
+      target.closest('[role="dialog"]') ||
+      target.closest('[role="listbox"]') ||
+      target.closest(".radix-select-content")
+    ) {
+      return;
+    }
+
     if (!showDeleteDialog) {
       onClose();
     }
