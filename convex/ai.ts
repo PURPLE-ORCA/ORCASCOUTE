@@ -182,15 +182,23 @@ export const generateCoverLetter = action({
       cvId: args.cvId,
     });
 
-    if (!cv?.text) {
-      throw new Error("CV text not available. Please upload a CV first.");
+    // Use CV text if available, otherwise fallback to profile data
+    let cvText = cv?.text || "";
+    if (!cvText) {
+      console.log("CV text not found, falling back to profile data");
+      cvText = `
+        Name: ${user.name}
+        Title: ${user.title || "N/A"}
+        Skills: ${user.skills?.join(", ") || "N/A"}
+        Email: ${user.email}
+      `;
     }
 
     // Build the prompt for Gemini
     const prompt = buildCoverLetterPrompt({
       job,
       user,
-      cvText: cv.text,
+      cvText,
       length: args.length,
       focusAreas: args.focusAreas,
     });
