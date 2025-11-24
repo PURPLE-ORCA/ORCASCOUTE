@@ -30,6 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 
@@ -206,8 +207,9 @@ export function AddJobDialog({ children }: { children: React.ReactNode }) {
                 <FormItem>
                   <FormLabel>Notes</FormLabel>
                   <FormControl>
-                    <Input
+                    <Textarea
                       placeholder="Referral from John, hiring manager is Jane..."
+                      rows={4}
                       {...field}
                     />
                   </FormControl>

@@ -321,10 +321,11 @@ export function JobDetailDialog({
                   href={job.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-primary text-sm hover:underline"
+                  className="flex items-center gap-2 text-primary text-sm hover:underline break-all"
+                  title={job.url}
                 >
-                  {job.url}
-                  <IconExternalLink className="h-4 w-4" />
+                  <span className="truncate">{job.url}</span>
+                  <IconExternalLink className="h-4 w-4 shrink-0" />
                 </a>
               </div>
             )}

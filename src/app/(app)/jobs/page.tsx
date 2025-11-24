@@ -11,10 +11,12 @@ import {
 } from "@/components/ui/kanban";
 import { JobCardContent } from "@/components/job-card-content";
 import { AddJobDialog } from "@/components/add-job-dialog";
+import { ExpandableJobDetail } from "@/components/expandable-job-detail";
 import { JobDetailDialog } from "@/components/job-detail-dialog";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useState } from "react";
+import { motion } from "framer-motion";
 import type { Id } from "../../../../convex/_generated/dataModel";
 
 const COLUMNS = [
@@ -29,8 +31,10 @@ export default function JobsPage() {
   const updateStatus = useMutation(api.jobs.updateStatus);
   const [isUpdating, setIsUpdating] = useState(false);
   const [selectedJobId, setSelectedJobId] = useState<Id<"jobs"> | null>(null);
+  const [editingJobId, setEditingJobId] = useState<Id<"jobs"> | null>(null);
 
   const selectedJob = jobs?.find((j) => j._id === selectedJobId) || null;
+  const editingJob = jobs?.find((j) => j._id === editingJobId) || null;
 
   // Transform jobs data to match Kanban expected format
   const kanbanJobs =
@@ -118,7 +122,8 @@ export default function JobsPage() {
                         column={job.column}
                         key={job.id}
                       >
-                        <div
+                        <motion.div
+                          layoutId={`job-card-${job._id}`}
                           onClick={(e) => {
                             e.stopPropagation();
                             setSelectedJobId(job._id as Id<"jobs">);
@@ -126,7 +131,7 @@ export default function JobsPage() {
                           className="cursor-pointer"
                         >
                           <JobCardContent job={job} />
-                        </div>
+                        </motion.div>
                       </KanbanCard>
                     )}
                   </KanbanCards>
@@ -137,10 +142,19 @@ export default function JobsPage() {
         </div>
       )}
 
-      <JobDetailDialog
+      <ExpandableJobDetail
         job={selectedJob}
-        open={!!selectedJobId}
-        onOpenChange={(open) => !open && setSelectedJobId(null)}
+        onClose={() => setSelectedJobId(null)}
+        onEdit={(job) => {
+          setSelectedJobId(null);
+          setEditingJobId(job._id);
+        }}
+      />
+
+      <JobDetailDialog
+        job={editingJob}
+        open={!!editingJobId}
+        onOpenChange={(open) => !open && setEditingJobId(null)}
       />
 
       {isUpdating && (
