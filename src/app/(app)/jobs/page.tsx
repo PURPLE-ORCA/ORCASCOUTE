@@ -11,9 +11,11 @@ import {
 } from "@/components/ui/kanban";
 import { JobCardContent } from "@/components/job-card-content";
 import { AddJobDialog } from "@/components/add-job-dialog";
+import { JobDetailDialog } from "@/components/job-detail-dialog";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useState } from "react";
+import type { Id } from "../../../../convex/_generated/dataModel";
 
 const COLUMNS = [
   { id: "saved", name: "Saved" },
@@ -26,6 +28,9 @@ export default function JobsPage() {
   const jobs = useQuery(api.jobs.list);
   const updateStatus = useMutation(api.jobs.updateStatus);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [selectedJobId, setSelectedJobId] = useState<Id<"jobs"> | null>(null);
+
+  const selectedJob = jobs?.find((j) => j._id === selectedJobId) || null;
 
   // Transform jobs data to match Kanban expected format
   const kanbanJobs =
@@ -113,7 +118,15 @@ export default function JobsPage() {
                         column={job.column}
                         key={job.id}
                       >
-                        <JobCardContent job={job} />
+                        <div
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedJobId(job._id as Id<"jobs">);
+                          }}
+                          className="cursor-pointer"
+                        >
+                          <JobCardContent job={job} />
+                        </div>
                       </KanbanCard>
                     )}
                   </KanbanCards>
@@ -123,6 +136,12 @@ export default function JobsPage() {
           </KanbanProvider>
         </div>
       )}
+
+      <JobDetailDialog
+        job={selectedJob}
+        open={!!selectedJobId}
+        onOpenChange={(open) => !open && setSelectedJobId(null)}
+      />
 
       {isUpdating && (
         <div className="fixed bottom-4 right-4 flex items-center gap-2 rounded-md border bg-background px-4 py-2 shadow-lg">

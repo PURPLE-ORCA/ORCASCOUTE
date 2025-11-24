@@ -105,6 +105,46 @@ export const updateStatus = mutation({
 });
 
 /**
+ * Update job details
+ */
+export const update = mutation({
+  args: {
+    id: v.id("jobs"),
+    title: v.optional(v.string()),
+    companyName: v.optional(v.string()),
+    url: v.optional(v.string()),
+    location: v.optional(v.string()),
+    salary: v.optional(v.string()),
+    remoteType: v.optional(v.string()),
+    notes: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const job = await ctx.db.get(args.id);
+    if (!job) throw new Error("Job not found");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier)
+      )
+      .unique();
+
+    if (!user || job.userId !== user._id) {
+      throw new Error("Unauthorized");
+    }
+
+    const { id, ...updates } = args;
+    await ctx.db.patch(args.id, {
+      ...updates,
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+/**
  * Delete a job
  */
 export const remove = mutation({

@@ -50,7 +50,7 @@ type KanbanColumnProps = {
 
 type KanbanContextProps<
   T extends KanbanItemProps = KanbanItemProps,
-  C extends KanbanColumnProps = KanbanColumnProps,
+  C extends KanbanColumnProps = KanbanColumnProps
 > = {
   columns: C[];
   data: T[];
@@ -118,14 +118,34 @@ export const KanbanCard = <T extends KanbanItemProps = KanbanItemProps>({
 
   return (
     <>
-      <div style={style} {...listeners} {...attributes} ref={setNodeRef}>
+      <div style={style} ref={setNodeRef}>
         <Card
           className={cn(
-            "cursor-grab gap-4 rounded-md p-3 shadow-sm",
-            isDragging && "pointer-events-none cursor-grabbing opacity-30",
+            "gap-4 rounded-md p-3 shadow-sm relative",
+            isDragging && "pointer-events-none opacity-30",
             className
           )}
         >
+          <div
+            {...listeners}
+            {...attributes}
+            className="absolute right-2 top-2 cursor-grab active:cursor-grabbing p-1 hover:bg-accent rounded"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="currentColor"
+              className="text-muted-foreground"
+            >
+              <circle cx="4" cy="4" r="1.5" />
+              <circle cx="12" cy="4" r="1.5" />
+              <circle cx="4" cy="8" r="1.5" />
+              <circle cx="12" cy="8" r="1.5" />
+              <circle cx="4" cy="12" r="1.5" />
+              <circle cx="12" cy="12" r="1.5" />
+            </svg>
+          </div>
           {children ?? <p className="m-0 font-medium text-sm">{name}</p>}
         </Card>
       </div>
@@ -133,11 +153,27 @@ export const KanbanCard = <T extends KanbanItemProps = KanbanItemProps>({
         <t.In>
           <Card
             className={cn(
-              "cursor-grab gap-4 rounded-md p-3 shadow-sm ring-2 ring-primary",
+              "gap-4 rounded-md p-3 shadow-sm ring-2 ring-primary relative",
               isDragging && "cursor-grabbing",
               className
             )}
           >
+            <div className="absolute right-2 top-2 p-1">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="currentColor"
+                className="text-muted-foreground"
+              >
+                <circle cx="4" cy="4" r="1.5" />
+                <circle cx="12" cy="4" r="1.5" />
+                <circle cx="4" cy="8" r="1.5" />
+                <circle cx="12" cy="8" r="1.5" />
+                <circle cx="4" cy="12" r="1.5" />
+                <circle cx="12" cy="12" r="1.5" />
+              </svg>
+            </div>
             {children ?? <p className="m-0 font-medium text-sm">{name}</p>}
           </Card>
         </t.In>
@@ -184,7 +220,7 @@ export const KanbanHeader = ({ className, ...props }: KanbanHeaderProps) => (
 
 export type KanbanProviderProps<
   T extends KanbanItemProps = KanbanItemProps,
-  C extends KanbanColumnProps = KanbanColumnProps,
+  C extends KanbanColumnProps = KanbanColumnProps
 > = Omit<DndContextProps, "children"> & {
   children: (column: C) => ReactNode;
   className?: string;
@@ -198,7 +234,7 @@ export type KanbanProviderProps<
 
 export const KanbanProvider = <
   T extends KanbanItemProps = KanbanItemProps,
-  C extends KanbanColumnProps = KanbanColumnProps,
+  C extends KanbanColumnProps = KanbanColumnProps
 >({
   children,
   onDragStart,

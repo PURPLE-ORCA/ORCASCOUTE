@@ -2,12 +2,12 @@ import { Badge } from "@/components/ui/badge";
 
 type JobCardContentProps = {
   job: {
-    title: string;
-    companyName: string;
+    title?: string;
+    companyName?: string;
     salary?: string;
     location?: string;
     remoteType?: string;
-  };
+  } & Record<string, any>;
 };
 
 export function JobCardContent({ job }: JobCardContentProps) {
