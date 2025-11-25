@@ -14,6 +14,7 @@ import type * as companies from "../companies.js";
 import type * as contacts from "../contacts.js";
 import type * as cvs from "../cvs.js";
 import type * as jobs from "../jobs.js";
+import type * as templates from "../templates.js";
 import type * as users from "../users.js";
 
 import type {
@@ -29,6 +30,7 @@ declare const fullApi: ApiFromModules<{
   contacts: typeof contacts;
   cvs: typeof cvs;
   jobs: typeof jobs;
+  templates: typeof templates;
   users: typeof users;
 }>;
 
