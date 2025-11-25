@@ -3,19 +3,22 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { useOnClickOutside } from "usehooks-ts";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog";
 import { AIToolbar } from "@/components/ai-toolbar";
+import { RecruiterSelector } from "@/components/recruiter-selector";
 import ReactMarkdown from "react-markdown";
 import {
   IconExternalLink,
   IconTrash,
   IconEdit,
   IconX,
+  IconUser,
+  IconMail,
 } from "@tabler/icons-react";
 
 type Job = {
@@ -28,6 +31,7 @@ type Job = {
   remoteType?: string;
   notes?: string;
   status: string;
+  recruiterId?: Id<"recruiters">;
   createdAt: number;
   updatedAt: number;
 };
@@ -47,6 +51,12 @@ export function ExpandableJobDetail({
   const deleteJob = useMutation(api.jobs.remove);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Fetch recruiter data if linked
+  const recruiter = useQuery(
+    api.recruiters.get,
+    job?.recruiterId ? { recruiterId: job.recruiterId } : "skip"
+  );
 
   useOnClickOutside(ref as React.RefObject<HTMLElement>, (event) => {
     // Ignore clicks inside dialogs or select dropdowns (which are in portals)
@@ -166,6 +176,55 @@ export function ExpandableJobDetail({
 
               {/* AI Assistant Toolbar */}
               <AIToolbar jobId={job._id} />
+
+              {/* Recruiter Section */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="rounded-lg border bg-card/50 p-4"
+              >
+                <h3 className="mb-3 font-semibold text-sm">Recruiter</h3>
+                {recruiter ? (
+                  <div className="space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="rounded-lg bg-primary/10 p-2">
+                          <IconUser className="h-4 w-4 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm">
+                            {recruiter.name}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {recruiter.position && `${recruiter.position} at `}
+                            {recruiter.company}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <IconMail className="h-3.5 w-3.5" />
+                      <a
+                        href={`mailto:${recruiter.email}`}
+                        className="text-primary hover:underline"
+                      >
+                        {recruiter.email}
+                      </a>
+                    </div>
+                    <RecruiterSelector
+                      jobId={job._id}
+                      currentRecruiterId={job.recruiterId}
+                    />
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      No recruiter linked to this job
+                    </p>
+                    <RecruiterSelector jobId={job._id} />
+                  </div>
+                )}
+              </motion.div>
 
               {/* Content - Fades in */}
               <motion.div

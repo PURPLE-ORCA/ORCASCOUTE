@@ -36,12 +36,14 @@ export default defineSchema({
     notes: v.optional(v.string()),
     tags: v.optional(v.array(v.string())),
     cvVersionId: v.optional(v.id("cv_versions")),
+    recruiterId: v.optional(v.id("recruiters")),
     createdAt: v.number(),
     updatedAt: v.number(),
     fitScore: v.optional(v.number()),
   })
     .index("by_user", ["userId"])
-    .index("by_user_status", ["userId", "status"]),
+    .index("by_user_status", ["userId", "status"])
+    .index("by_recruiter", ["recruiterId"]),
 
   companies: defineTable({
     userId: v.optional(v.id("users")), // Optional if global/system company, but spec says "userId (optional if user-saved company)" - assuming mostly user-saved for now
@@ -56,13 +58,15 @@ export default defineSchema({
 
   recruiters: defineTable({
     userId: v.id("users"),
-    jobId: v.optional(v.id("jobs")),
-    companyId: v.optional(v.id("companies")),
     name: v.string(),
-    role: v.optional(v.string()),
-    email: v.optional(v.string()),
-    linkedinUrl: v.optional(v.string()),
+    company: v.string(),
+    position: v.optional(v.string()),
+    email: v.string(),
+    phone: v.optional(v.string()),
+    linkedIn: v.optional(v.string()),
+    tags: v.optional(v.array(v.string())),
     notes: v.optional(v.string()),
+    lastContact: v.optional(v.number()),
     createdAt: v.number(),
   })
     .index("by_user", ["userId"])
