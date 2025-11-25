@@ -201,12 +201,12 @@ export const remove = mutation({
 });
 
 /**
- * Link a recruiter to a job
+ * Link a contact to a job
  */
-export const linkRecruiter = mutation({
+export const linkContact = mutation({
   args: {
     jobId: v.id("jobs"),
-    recruiterId: v.id("recruiters"),
+    contactId: v.id("contacts"),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -227,16 +227,16 @@ export const linkRecruiter = mutation({
     }
 
     await ctx.db.patch(args.jobId, {
-      recruiterId: args.recruiterId,
+      contactId: args.contactId,
       updatedAt: Date.now(),
     });
   },
 });
 
 /**
- * Unlink a recruiter from a job
+ * Unlink a contact from a job
  */
-export const unlinkRecruiter = mutation({
+export const unlinkContact = mutation({
   args: {
     jobId: v.id("jobs"),
   },
@@ -259,7 +259,72 @@ export const unlinkRecruiter = mutation({
     }
 
     await ctx.db.patch(args.jobId, {
-      recruiterId: undefined,
+      contactId: undefined,
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+/**
+ * Link a company to a job
+ */
+export const linkCompany = mutation({
+  args: {
+    jobId: v.id("jobs"),
+    companyId: v.id("companies"),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const job = await ctx.db.get(args.jobId);
+    if (!job) throw new Error("Job not found");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier)
+      )
+      .unique();
+
+    if (!user || job.userId !== user._id) {
+      throw new Error("Unauthorized");
+    }
+
+    await ctx.db.patch(args.jobId, {
+      emailDbCompanyId: args.companyId,
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+/**
+ * Unlink a company from a job
+ */
+export const unlinkCompany = mutation({
+  args: {
+    jobId: v.id("jobs"),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const job = await ctx.db.get(args.jobId);
+    if (!job) throw new Error("Job not found");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier)
+      )
+      .unique();
+
+    if (!user || job.userId !== user._id) {
+      throw new Error("Unauthorized");
+    }
+
+    await ctx.db.patch(args.jobId, {
+      emailDbCompanyId: undefined,
       updatedAt: Date.now(),
     });
   },

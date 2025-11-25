@@ -9,43 +9,43 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   IconUser,
-  IconBriefcase,
+  IconBuilding,
   IconMail,
   IconPhone,
-  IconCalendar,
+  IconBrandLinkedin,
+  IconBriefcase,
   IconEye,
   IconEdit,
   IconTrash,
+  IconClock,
 } from "@tabler/icons-react";
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog";
 import { motion } from "framer-motion";
 
-interface RecruiterCardProps {
-  recruiter: {
-    _id: Id<"recruiters">;
+interface ContactCardProps {
+  contact: {
+    _id: Id<"contacts">;
     name: string;
-    company: string;
+    company?: {
+      name: string;
+    } | null;
     position?: string;
-    email: string;
+    email?: string;
     phone?: string;
+    linkedIn?: string;
     jobCount: number;
     lastContact?: number;
-    createdAt: number;
   };
   onView: () => void;
   onEdit: () => void;
 }
 
-export function RecruiterCard({
-  recruiter,
-  onView,
-  onEdit,
-}: RecruiterCardProps) {
+export function ContactCard({ contact, onView, onEdit }: ContactCardProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const deleteRecruiter = useMutation(api.recruiters.remove);
+  const deleteContact = useMutation(api.contacts.remove);
 
   const handleDelete = async () => {
-    await deleteRecruiter({ recruiterId: recruiter._id });
+    await deleteContact({ contactId: contact._id });
     setShowDeleteDialog(false);
   };
 
@@ -60,18 +60,18 @@ export function RecruiterCard({
       const hours = Math.floor(diff / (1000 * 60 * 60));
       if (hours === 0) {
         const minutes = Math.floor(diff / (1000 * 60));
-        return minutes <= 1 ? "Just now" : `${minutes} minutes ago`;
+        return minutes <= 1 ? "Just now" : `${minutes} m ago`;
       }
-      return hours === 1 ? "1 hour ago" : `${hours} hours ago`;
+      return hours === 1 ? "1 h ago" : `${hours} h ago`;
     }
     if (days === 1) return "Yesterday";
-    if (days < 7) return `${days} days ago`;
+    if (days < 7) return `${days} d ago`;
     if (days < 30) {
       const weeks = Math.floor(days / 7);
-      return weeks === 1 ? "1 week ago" : `${weeks} weeks ago`;
+      return weeks === 1 ? "1 w ago" : `${weeks} w ago`;
     }
     const months = Math.floor(days / 30);
-    return months === 1 ? "1 month ago" : `${months} months ago`;
+    return months === 1 ? "1 mo ago" : `${months} mo ago`;
   };
 
   return (
@@ -91,34 +91,42 @@ export function RecruiterCard({
               </div>
               <div>
                 <h3 className="font-semibold text-base leading-tight">
-                  {recruiter.name}
+                  {contact.name}
                 </h3>
-                {recruiter.position && (
+                {contact.position && (
                   <p className="text-xs text-muted-foreground">
-                    {recruiter.position}
+                    {contact.position}
                   </p>
                 )}
               </div>
             </div>
+            {contact.company && (
+              <div className="mt-2 flex items-center gap-1.5 text-sm text-muted-foreground">
+                <IconBuilding className="h-3.5 w-3.5" />
+                <span>{contact.company.name}</span>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Company */}
-        <div className="mb-3 flex items-center gap-2 text-sm">
-          <IconBriefcase className="h-4 w-4 text-muted-foreground" />
-          <span className="font-medium">{recruiter.company}</span>
-        </div>
-
-        {/* Contact Info */}
-        <div className="mb-4 space-y-2">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <IconMail className="h-3.5 w-3.5" />
-            <span className="truncate">{recruiter.email}</span>
-          </div>
-          {recruiter.phone && (
+        {/* Contact Details */}
+        <div className="mb-4 space-y-1.5">
+          {contact.email && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <IconMail className="h-3.5 w-3.5" />
+              <span className="truncate">{contact.email}</span>
+            </div>
+          )}
+          {contact.phone && (
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <IconPhone className="h-3.5 w-3.5" />
-              <span>{recruiter.phone}</span>
+              <span className="truncate">{contact.phone}</span>
+            </div>
+          )}
+          {contact.linkedIn && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <IconBrandLinkedin className="h-3.5 w-3.5" />
+              <span className="truncate">LinkedIn Profile</span>
             </div>
           )}
         </div>
@@ -126,11 +134,12 @@ export function RecruiterCard({
         {/* Stats */}
         <div className="mb-4 flex items-center gap-4 text-xs">
           <Badge variant="secondary" className="font-normal">
-            💼 {recruiter.jobCount} {recruiter.jobCount === 1 ? "job" : "jobs"}
+            <IconBriefcase className="mr-1 h-3 w-3" />
+            {contact.jobCount} {contact.jobCount === 1 ? "job" : "jobs"}
           </Badge>
-          <div className="flex items-center gap-1 text-muted-foreground">
-            <IconCalendar className="h-3.5 w-3.5" />
-            <span>{formatLastContact(recruiter.lastContact)}</span>
+          <div className="flex items-center text-muted-foreground">
+            <IconClock className="mr-1 h-3 w-3" />
+            {formatLastContact(contact.lastContact)}
           </div>
         </div>
 
@@ -163,8 +172,9 @@ export function RecruiterCard({
           open={showDeleteDialog}
           onOpenChange={setShowDeleteDialog}
           onConfirm={handleDelete}
-          title="Delete Recruiter"
-          description={`Are you sure you want to delete ${recruiter.name}? This will unlink them from all associated jobs.`}
+          title="Delete Contact"
+          itemName={contact.name}
+          description={`Are you sure you want to delete ${contact.name}? This will unlink them from all associated jobs.`}
         />
       </Card>
     </motion.div>

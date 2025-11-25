@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog";
 import { AIToolbar } from "@/components/ai-toolbar";
-import { RecruiterSelector } from "@/components/recruiter-selector";
+import { EmailDbSelector } from "@/components/email-db-selector";
 import ReactMarkdown from "react-markdown";
 import {
   IconExternalLink,
@@ -19,6 +19,7 @@ import {
   IconX,
   IconUser,
   IconMail,
+  IconBuilding,
 } from "@tabler/icons-react";
 
 type Job = {
@@ -31,9 +32,11 @@ type Job = {
   remoteType?: string;
   notes?: string;
   status: string;
-  recruiterId?: Id<"recruiters">;
+  contactId?: Id<"contacts">;
+  emailDbCompanyId?: Id<"companies">;
   createdAt: number;
   updatedAt: number;
+  appliedAt?: number;
 };
 
 type ExpandableJobDetailProps = {
@@ -52,10 +55,16 @@ export function ExpandableJobDetail({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Fetch recruiter data if linked
-  const recruiter = useQuery(
-    api.recruiters.get,
-    job?.recruiterId ? { recruiterId: job.recruiterId } : "skip"
+  // Fetch contact data if linked
+  const contact = useQuery(
+    api.contacts.get,
+    job?.contactId ? { contactId: job.contactId } : "skip"
+  );
+
+  // Fetch company data if linked
+  const company = useQuery(
+    api.companies.get,
+    job?.emailDbCompanyId ? { companyId: job.emailDbCompanyId } : "skip"
   );
 
   useOnClickOutside(ref as React.RefObject<HTMLElement>, (event) => {
@@ -177,27 +186,28 @@ export function ExpandableJobDetail({
               {/* AI Assistant Toolbar */}
               <AIToolbar jobId={job._id} />
 
-              {/* Recruiter Section */}
+              {/* Email DB Link Section */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 className="rounded-lg border bg-card/50 p-4"
               >
-                <h3 className="mb-3 font-semibold text-sm">Recruiter</h3>
-                {recruiter ? (
-                  <div className="space-y-3">
+                <h3 className="mb-3 font-semibold text-sm">
+                  Linked Contact/Company
+                </h3>
+
+                {contact ? (
+                  <div className="mb-3 space-y-3">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-2">
                         <div className="rounded-lg bg-primary/10 p-2">
                           <IconUser className="h-4 w-4 text-primary" />
                         </div>
                         <div>
-                          <p className="font-medium text-sm">
-                            {recruiter.name}
-                          </p>
+                          <p className="font-medium text-sm">{contact.name}</p>
                           <p className="text-xs text-muted-foreground">
-                            {recruiter.position && `${recruiter.position} at `}
-                            {recruiter.company}
+                            {contact.position && `${contact.position}`}
+                            {contact.company && ` at ${contact.company.name}`}
                           </p>
                         </div>
                       </div>
@@ -205,25 +215,55 @@ export function ExpandableJobDetail({
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <IconMail className="h-3.5 w-3.5" />
                       <a
-                        href={`mailto:${recruiter.email}`}
+                        href={`mailto:${contact.email}`}
                         className="text-primary hover:underline"
                       >
-                        {recruiter.email}
+                        {contact.email}
                       </a>
                     </div>
-                    <RecruiterSelector
-                      jobId={job._id}
-                      currentRecruiterId={job.recruiterId}
-                    />
+                  </div>
+                ) : company ? (
+                  <div className="mb-3 space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="rounded-lg bg-primary/10 p-2">
+                          <IconBuilding className="h-4 w-4 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm">{company.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {company.emails.length} email
+                            {company.emails.length !== 1 ? "s" : ""}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    {company.emails.length > 0 && (
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <IconMail className="h-3.5 w-3.5" />
+                        <a
+                          href={`mailto:${company.emails[0]}`}
+                          className="text-primary hover:underline"
+                        >
+                          {company.emails[0]}
+                        </a>
+                        {company.emails.length > 1 && (
+                          <span>+{company.emails.length - 1} more</span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ) : (
-                  <div className="space-y-3">
-                    <p className="text-sm text-muted-foreground">
-                      No recruiter linked to this job
-                    </p>
-                    <RecruiterSelector jobId={job._id} />
-                  </div>
+                  <p className="mb-3 text-sm text-muted-foreground">
+                    No contact or company linked to this job
+                  </p>
                 )}
+
+                <EmailDbSelector
+                  jobId={job._id}
+                  currentContactId={job.contactId}
+                  currentCompanyId={job.emailDbCompanyId}
+                />
               </motion.div>
 
               {/* Content - Fades in */}

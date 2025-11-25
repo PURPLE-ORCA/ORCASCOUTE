@@ -2,15 +2,15 @@ import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { Id } from "./_generated/dataModel";
 
-// Create a new recruiter
+// Create a new contact
 export const create = mutation({
   args: {
     name: v.string(),
-    company: v.string(),
-    position: v.optional(v.string()),
-    email: v.string(),
-    phone: v.optional(v.string()),
+    email: v.optional(v.string()),
     linkedIn: v.optional(v.string()),
+    phone: v.optional(v.string()),
+    companyId: v.optional(v.id("companies")),
+    position: v.optional(v.string()),
     tags: v.optional(v.array(v.string())),
     notes: v.optional(v.string()),
   },
@@ -31,25 +31,25 @@ export const create = mutation({
       throw new Error("User not found");
     }
 
-    const recruiterId = await ctx.db.insert("recruiters", {
+    const contactId = await ctx.db.insert("contacts", {
       userId: user._id,
       name: args.name,
-      company: args.company,
-      position: args.position,
       email: args.email,
-      phone: args.phone,
       linkedIn: args.linkedIn,
+      phone: args.phone,
+      companyId: args.companyId,
+      position: args.position,
       tags: args.tags,
       notes: args.notes,
       lastContact: undefined,
       createdAt: Date.now(),
     });
 
-    return recruiterId;
+    return contactId;
   },
 });
 
-// Get all recruiters for the current user
+// Get all contacts for the current user
 export const getAll = query({
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -68,28 +68,35 @@ export const getAll = query({
       return [];
     }
 
-    const recruiters = await ctx.db
-      .query("recruiters")
+    const contacts = await ctx.db
+      .query("contacts")
       .withIndex("by_user", (q) => q.eq("userId", user._id))
       .collect();
 
-    // Get job counts for each recruiter
-    const recruitersWithJobCounts = await Promise.all(
-      recruiters.map(async (recruiter) => {
+    // Get company info and job counts for each contact
+    const contactsWithDetails = await Promise.all(
+      contacts.map(async (contact) => {
+        // Get company info if linked
+        const company = contact.companyId
+          ? await ctx.db.get(contact.companyId)
+          : null;
+
+        // Get job count
         const jobs = await ctx.db
           .query("jobs")
-          .withIndex("by_recruiter", (q) => q.eq("recruiterId", recruiter._id))
+          .withIndex("by_contact", (q) => q.eq("contactId", contact._id))
           .collect();
 
         return {
-          ...recruiter,
+          ...contact,
+          company,
           jobCount: jobs.length,
         };
       })
     );
 
     // Sort by lastContact (most recent first), then by createdAt
-    return recruitersWithJobCounts.sort((a, b) => {
+    return contactsWithDetails.sort((a, b) => {
       if (a.lastContact && b.lastContact) {
         return b.lastContact - a.lastContact;
       }
@@ -100,18 +107,18 @@ export const getAll = query({
   },
 });
 
-// Get a single recruiter with related jobs
+// Get a single contact with company and related jobs
 export const get = query({
-  args: { recruiterId: v.id("recruiters") },
+  args: { contactId: v.id("contacts") },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       throw new Error("Not authenticated");
     }
 
-    const recruiter = await ctx.db.get(args.recruiterId);
-    if (!recruiter) {
-      throw new Error("Recruiter not found");
+    const contact = await ctx.db.get(args.contactId);
+    if (!contact) {
+      throw new Error("Contact not found");
     }
 
     const user = await ctx.db
@@ -121,33 +128,39 @@ export const get = query({
       )
       .unique();
 
-    if (!user || recruiter.userId !== user._id) {
+    if (!user || contact.userId !== user._id) {
       throw new Error("Unauthorized");
     }
+
+    // Get company info if linked
+    const company = contact.companyId
+      ? await ctx.db.get(contact.companyId)
+      : null;
 
     // Get related jobs
     const jobs = await ctx.db
       .query("jobs")
-      .withIndex("by_recruiter", (q) => q.eq("recruiterId", recruiter._id))
+      .withIndex("by_contact", (q) => q.eq("contactId", contact._id))
       .collect();
 
     return {
-      ...recruiter,
+      ...contact,
+      company,
       jobs,
     };
   },
 });
 
-// Update recruiter details
+// Update contact details
 export const update = mutation({
   args: {
-    recruiterId: v.id("recruiters"),
+    contactId: v.id("contacts"),
     name: v.optional(v.string()),
-    company: v.optional(v.string()),
-    position: v.optional(v.string()),
     email: v.optional(v.string()),
-    phone: v.optional(v.string()),
     linkedIn: v.optional(v.string()),
+    phone: v.optional(v.string()),
+    companyId: v.optional(v.id("companies")),
+    position: v.optional(v.string()),
     tags: v.optional(v.array(v.string())),
     notes: v.optional(v.string()),
   },
@@ -157,9 +170,9 @@ export const update = mutation({
       throw new Error("Not authenticated");
     }
 
-    const recruiter = await ctx.db.get(args.recruiterId);
-    if (!recruiter) {
-      throw new Error("Recruiter not found");
+    const contact = await ctx.db.get(args.contactId);
+    if (!contact) {
+      throw new Error("Contact not found");
     }
 
     const user = await ctx.db
@@ -169,27 +182,27 @@ export const update = mutation({
       )
       .unique();
 
-    if (!user || recruiter.userId !== user._id) {
+    if (!user || contact.userId !== user._id) {
       throw new Error("Unauthorized");
     }
 
-    const { recruiterId, ...updates } = args;
-    await ctx.db.patch(recruiterId, updates);
+    const { contactId, ...updates } = args;
+    await ctx.db.patch(contactId, updates);
   },
 });
 
 // Update last contact timestamp
 export const updateLastContact = mutation({
-  args: { recruiterId: v.id("recruiters") },
+  args: { contactId: v.id("contacts") },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       throw new Error("Not authenticated");
     }
 
-    const recruiter = await ctx.db.get(args.recruiterId);
-    if (!recruiter) {
-      throw new Error("Recruiter not found");
+    const contact = await ctx.db.get(args.contactId);
+    if (!contact) {
+      throw new Error("Contact not found");
     }
 
     const user = await ctx.db
@@ -199,28 +212,28 @@ export const updateLastContact = mutation({
       )
       .unique();
 
-    if (!user || recruiter.userId !== user._id) {
+    if (!user || contact.userId !== user._id) {
       throw new Error("Unauthorized");
     }
 
-    await ctx.db.patch(args.recruiterId, {
+    await ctx.db.patch(args.contactId, {
       lastContact: Date.now(),
     });
   },
 });
 
-// Delete recruiter
+// Delete contact
 export const remove = mutation({
-  args: { recruiterId: v.id("recruiters") },
+  args: { contactId: v.id("contacts") },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       throw new Error("Not authenticated");
     }
 
-    const recruiter = await ctx.db.get(args.recruiterId);
-    if (!recruiter) {
-      throw new Error("Recruiter not found");
+    const contact = await ctx.db.get(args.contactId);
+    if (!contact) {
+      throw new Error("Contact not found");
     }
 
     const user = await ctx.db
@@ -230,21 +243,21 @@ export const remove = mutation({
       )
       .unique();
 
-    if (!user || recruiter.userId !== user._id) {
+    if (!user || contact.userId !== user._id) {
       throw new Error("Unauthorized");
     }
 
     // Unlink from all jobs
     const jobs = await ctx.db
       .query("jobs")
-      .withIndex("by_recruiter", (q) => q.eq("recruiterId", recruiter._id))
+      .withIndex("by_contact", (q) => q.eq("contactId", contact._id))
       .collect();
 
     for (const job of jobs) {
-      await ctx.db.patch(job._id, { recruiterId: undefined });
+      await ctx.db.patch(job._id, { contactId: undefined });
     }
 
-    // Delete recruiter
-    await ctx.db.delete(args.recruiterId);
+    // Delete contact
+    await ctx.db.delete(args.contactId);
   },
 });

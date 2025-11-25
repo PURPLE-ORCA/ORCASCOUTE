@@ -24,7 +24,6 @@ export default defineSchema({
   jobs: defineTable({
     userId: v.id("users"),
     title: v.string(),
-    companyId: v.optional(v.id("companies")),
     companyName: v.string(),
     url: v.optional(v.string()),
     source: v.optional(v.string()),
@@ -36,40 +35,44 @@ export default defineSchema({
     notes: v.optional(v.string()),
     tags: v.optional(v.array(v.string())),
     cvVersionId: v.optional(v.id("cv_versions")),
-    recruiterId: v.optional(v.id("recruiters")),
+    contactId: v.optional(v.id("contacts")), // Link to contact (HR person)
+    emailDbCompanyId: v.optional(v.id("companies")), // Link to company from Email DB
     createdAt: v.number(),
     updatedAt: v.number(),
     fitScore: v.optional(v.number()),
   })
     .index("by_user", ["userId"])
     .index("by_user_status", ["userId", "status"])
-    .index("by_recruiter", ["recruiterId"]),
+    .index("by_contact", ["contactId"])
+    .index("by_emaildb_company", ["emailDbCompanyId"]),
 
   companies: defineTable({
-    userId: v.optional(v.id("users")), // Optional if global/system company, but spec says "userId (optional if user-saved company)" - assuming mostly user-saved for now
-    name: v.string(),
-    website: v.optional(v.string()),
-    industry: v.optional(v.string()),
-    notes: v.optional(v.string()),
-    createdAt: v.number(),
-  })
-    .index("by_name", ["name"])
-    .index("by_user", ["userId"]), // Note: userId is optional, so this index might need care if querying by it.
-
-  recruiters: defineTable({
     userId: v.id("users"),
     name: v.string(),
-    company: v.string(),
-    position: v.optional(v.string()),
-    email: v.string(),
-    phone: v.optional(v.string()),
-    linkedIn: v.optional(v.string()),
-    tags: v.optional(v.array(v.string())),
+    emails: v.array(v.string()), // ["jobs@company.com", "hr@company.com"]
+    linkedInProfiles: v.optional(v.array(v.string())), // Company page, careers page
     notes: v.optional(v.string()),
-    lastContact: v.optional(v.number()),
+    tags: v.optional(v.array(v.string())),
     createdAt: v.number(),
   })
     .index("by_user", ["userId"])
+    .index("by_name", ["name"]),
+
+  contacts: defineTable({
+    userId: v.id("users"),
+    name: v.string(),
+    email: v.optional(v.string()), // Primary email (most important)
+    linkedIn: v.optional(v.string()), // Second most important
+    phone: v.optional(v.string()), // Third most important
+    companyId: v.optional(v.id("companies")), // Link to company
+    position: v.optional(v.string()),
+    lastContact: v.optional(v.number()),
+    notes: v.optional(v.string()),
+    tags: v.optional(v.array(v.string())),
+    createdAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_company", ["companyId"])
     .index("by_email", ["email"]),
 
   cv_versions: defineTable({
