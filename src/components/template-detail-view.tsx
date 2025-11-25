@@ -148,20 +148,6 @@ export function TemplateDetailView({
 
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto p-6">
-                  {/* Tags */}
-                  {template.tags && template.tags.length > 0 && (
-                    <div className="mb-6">
-                      <h3 className="mb-2 font-semibold text-sm">Tags</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {template.tags.map((tag) => (
-                          <Badge key={tag} variant="secondary">
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
                   {/* Subject */}
                   {template.subject && (
                     <>
@@ -204,6 +190,21 @@ export function TemplateDetailView({
                       </p>
                     </div>
                   </div>
+
+                  {/* Tags */}
+                  {template.tags && template.tags.length > 0 && (
+                    <div className="mb-6">
+                      <h3 className="mb-2 font-semibold text-sm">Tags</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {template.tags.map((tag) => (
+                          <Badge key={tag} variant="secondary">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
                 </div>
 
                 {/* Actions Footer */}

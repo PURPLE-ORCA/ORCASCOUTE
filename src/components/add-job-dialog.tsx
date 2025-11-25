@@ -210,6 +210,7 @@ export function AddJobDialog({ children }: { children: React.ReactNode }) {
                     <Textarea
                       placeholder="Referral from John, hiring manager is Jane..."
                       rows={4}
+                      className="max-h-60 overflow-y-auto"
                       {...field}
                     />
                   </FormControl>

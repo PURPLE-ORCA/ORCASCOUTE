@@ -26,6 +26,7 @@ import {
 } from "@tabler/icons-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { Icon } from "@iconify/react";
 
 interface ContactDetailViewProps {
   contactId: Id<"contacts"> | null;
@@ -180,69 +181,95 @@ export function ContactDetailView({
               className="flex max-h-[90vh] w-full max-w-2xl cursor-auto flex-col gap-4 overflow-y-auto rounded-xl border bg-background p-6 shadow-2xl"
             >
               {/* Header */}
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <h2 className="font-bold text-2xl">{contactData.name}</h2>
-                  <p className="text-muted-foreground">
-                    {contactData.position && `${contactData.position}`}
-                  </p>
+              <div className="flex flex-col gap-4">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h2 className="font-bold text-3xl">{contactData.name}</h2>
+                    {contactData.position && (
+                      <p className="text-lg text-muted-foreground">
+                        {contactData.position}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setShowEditDialog(true)}
+                    >
+                      <IconEdit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setShowDeleteDialog(true)}
+                    >
+                      <IconTrash className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={onClose}>
+                      <IconX className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setShowEditDialog(true)}
-                  >
-                    <IconEdit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setShowDeleteDialog(true)}
-                  >
-                    <IconTrash className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={onClose}>
-                    <IconX className="h-4 w-4" />
-                  </Button>
-                  {contactData.linkedIn && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <IconBrandLinkedin className="h-4 w-4 text-muted-foreground" />
-                      <a
-                        href={contactData.linkedIn}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-primary hover:underline"
-                      >
-                        LinkedIn Profile
-                        <IconExternalLink className="h-3 w-3" />
-                      </a>
-                    </div>
-                  )}
+
+                {/* Meta Info */}
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
                   {contactData.company ? (
-                    <div className="flex items-center gap-2 text-sm">
-                      <IconBuilding className="h-4 w-4 text-muted-foreground" />
+                    <div className="flex items-center gap-2">
+                      <IconBuilding className="h-4 w-4" />
                       <button
                         onClick={() =>
                           setSelectedCompanyId(contactData.company!._id)
                         }
-                        className="text-primary hover:underline"
+                        className="hover:text-primary hover:underline"
                       >
                         {contactData.company.name}
                       </button>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2">
                       <IconBuilding className="h-4 w-4" />
                       <span>No company linked</span>
                     </div>
                   )}
-                  <div className="flex items-center gap-2 text-sm">
-                    <IconClock className="h-4 w-4 text-muted-foreground" />
+
+                  {contactData.linkedIn && (
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={contactData.linkedIn}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 hover:text-primary hover:underline"
+                      >
+                        <Icon
+                          icon="lineicons:linkedin"
+                          width="20"
+                          height="20"
+                        />
+                        LinkedIn Profile
+                        <IconExternalLink className="h-3 w-3" />
+                      </a>
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-2">
+                    <IconClock className="h-4 w-4" />
                     <span>
                       Last contact: {formatLastContact(contactData.lastContact)}
                     </span>
                   </div>
+
+                  {contactData.email && (
+                    <div className="flex items-center gap-2">
+                      <IconMail className="h-4 w-4" />
+                      <a
+                        href={`mailto:${contactData.email}`}
+                        className="hover:text-primary hover:underline"
+                      >
+                        {contactData.email}
+                      </a>
+                    </div>
+                  )}
                 </div>
               </div>
 

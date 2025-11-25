@@ -20,13 +20,13 @@ export function JobCardContent({ job }: JobCardContentProps) {
       <div>
         <motion.p
           layoutId={`job-company-${jobId}`}
-          className="font-semibold text-sm"
+          className="font-semibold text-lg"
         >
           {job.companyName}
         </motion.p>
         <motion.p
           layoutId={`job-title-${jobId}`}
-          className="text-muted-foreground text-xs"
+          className="text-muted-foreground text-base"
         >
           {job.title}
         </motion.p>
@@ -48,10 +48,6 @@ export function JobCardContent({ job }: JobCardContentProps) {
             </Badge>
           )}
         </motion.div>
-      )}
-
-      {job.location && (
-        <p className="text-muted-foreground text-xs">{job.location}</p>
       )}
     </div>
   );

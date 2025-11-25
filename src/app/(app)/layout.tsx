@@ -56,7 +56,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <SidebarBody className="justify-between gap-10">
           <div className="flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
             <div className="mb-8 flex items-center gap-2 px-2">
-              <span className="text-2xl">🐋</span>
+              <img src="img/orcaLogo.png" alt="" className="w-15 h-auto" />
               <span className="font-bold text-xl">OrcaScout</span>
             </div>
             <div className="flex flex-col gap-2">
@@ -65,8 +65,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               ))}
             </div>
           </div>
-          <div className="flex flex-col gap-4 px-2">
-            <AnimatedThemeToggler className="flex h-10 w-10 items-center justify-center rounded-md border bg-background text-foreground transition-colors hover:bg-accent" />
+          <div className="flex flex-col gap-4">
+            <AnimatedThemeToggler className="flex h-8 w-8 items-center justify-center text-foreground transition-colors" />
             <UserMenu />
           </div>
         </SidebarBody>

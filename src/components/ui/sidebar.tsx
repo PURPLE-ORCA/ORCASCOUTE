@@ -86,9 +86,15 @@ export const DesktopSidebar = ({
   const { open, setOpen, animate } = useSidebar();
   return (
     <>
+      <div
+        className={cn(
+          "h-full px-2 py-4 hidden md:flex md:flex-col bg-sidebar dark:bg-sidebar w-[60px] shrink-0",
+          className
+        )}
+      />
       <motion.div
         className={cn(
-          "h-full px-4 py-4 hidden  md:flex md:flex-col bg-sidebar dark:bg-sidebar w-[300px] shrink-0",
+          "fixed left-0 top-0 h-full px-2 py-4 hidden md:flex md:flex-col bg-sidebar dark:bg-sidebar z-50",
           className
         )}
         animate={{
@@ -100,6 +106,16 @@ export const DesktopSidebar = ({
       >
         {children}
       </motion.div>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-40 backdrop-blur-sm pointer-events-none"
+          />
+        )}
+      </AnimatePresence>
     </>
   );
 };

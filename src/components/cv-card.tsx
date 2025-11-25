@@ -82,7 +82,7 @@ export function CVCard({ cv }: CVCardProps) {
     >
       <Card className="group relative overflow-hidden border-border/50 bg-card/50 p-4 backdrop-blur-sm transition-all hover:border-primary/50 hover:shadow-lg">
         {/* File Type Icon */}
-        <div className="mb-3 flex items-start justify-between">
+        <div className="flex items-start justify-between">
           <div className="rounded-lg bg-background/50 p-3">
             {fileType === "pdf" ? (
               <IconFileTypePdf className="h-8 w-8 text-red-500" />
@@ -93,7 +93,7 @@ export function CVCard({ cv }: CVCardProps) {
         </div>
 
         {/* CV Name */}
-        <div className="mb-2">
+        <div className="">
           {isEditing ? (
             <div className="flex items-center gap-2">
               <Input
@@ -129,7 +129,7 @@ export function CVCard({ cv }: CVCardProps) {
         </div>
 
         {/* Upload Date */}
-        <p className="mb-4 text-xs text-muted-foreground">
+        <p className="text-xs text-muted-foreground">
           Uploaded {formatDate(cv.createdAt)}
         </p>
 

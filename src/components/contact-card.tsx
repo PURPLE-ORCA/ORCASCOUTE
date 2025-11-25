@@ -21,6 +21,8 @@ import {
 } from "@tabler/icons-react";
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog";
 import { motion } from "framer-motion";
+import { Icon } from "@iconify/react";
+import { toast } from "sonner";
 
 interface ContactCardProps {
   contact: {
@@ -47,6 +49,12 @@ export function ContactCard({ contact, onView, onEdit }: ContactCardProps) {
   const handleDelete = async () => {
     await deleteContact({ contactId: contact._id });
     setShowDeleteDialog(false);
+  };
+
+  const handleCopyEmail = (e: React.MouseEvent, email: string) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(email);
+    toast.success("Email copied to clipboard");
   };
 
   const formatLastContact = (timestamp?: number) => {
@@ -83,14 +91,11 @@ export function ContactCard({ contact, onView, onEdit }: ContactCardProps) {
     >
       <Card className="group relative overflow-hidden border-border/50 bg-card/50 p-5 backdrop-blur-sm transition-all hover:border-primary/50 hover:shadow-lg">
         {/* Header */}
-        <div className="mb-4 flex items-start justify-between">
+        <div className="flex items-start justify-between">
           <div className="flex-1">
-            <div className="mb-1 flex items-center gap-2">
-              <div className="rounded-lg bg-primary/10 p-2">
-                <IconUser className="h-5 w-5 text-primary" />
-              </div>
+            <div className="flex items-center gap-2">
               <div>
-                <h3 className="font-semibold text-base leading-tight">
+                <h3 className="font-semibold text-lg leading-tight">
                   {contact.name}
                 </h3>
                 {contact.position && (
@@ -101,7 +106,7 @@ export function ContactCard({ contact, onView, onEdit }: ContactCardProps) {
               </div>
             </div>
             {contact.company && (
-              <div className="mt-2 flex items-center gap-1.5 text-sm text-muted-foreground">
+              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                 <IconBuilding className="h-3.5 w-3.5" />
                 <span>{contact.company.name}</span>
               </div>
@@ -109,38 +114,40 @@ export function ContactCard({ contact, onView, onEdit }: ContactCardProps) {
           </div>
         </div>
 
-        {/* Contact Details */}
-        <div className="mb-4 space-y-1.5">
-          {contact.email && (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <IconMail className="h-3.5 w-3.5" />
-              <span className="truncate">{contact.email}</span>
-            </div>
-          )}
-          {contact.phone && (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <IconPhone className="h-3.5 w-3.5" />
-              <span className="truncate">{contact.phone}</span>
-            </div>
-          )}
-          {contact.linkedIn && (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <IconBrandLinkedin className="h-3.5 w-3.5" />
-              <span className="truncate">LinkedIn Profile</span>
-            </div>
-          )}
-        </div>
-
-        {/* Stats */}
-        <div className="mb-4 flex items-center gap-4 text-xs">
-          <Badge variant="secondary" className="font-normal">
-            <IconBriefcase className="mr-1 h-3 w-3" />
-            {contact.jobCount} {contact.jobCount === 1 ? "job" : "jobs"}
-          </Badge>
-          <div className="flex items-center text-muted-foreground">
-            <IconClock className="mr-1 h-3 w-3" />
-            {formatLastContact(contact.lastContact)}
+        {/* Contact Details & LinkedIn */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex-1 space-y-1 min-w-0">
+            {contact.email && (
+              <div
+                className="flex items-center gap-2 text-lg text-muted-foreground opacity-80 hover:opacity-100 transition-opacity cursor-pointer"
+                onClick={(e) => handleCopyEmail(e, contact.email!)}
+                title="Click to copy"
+              >
+                <IconMail className="h-5 w-5 shrink-0" />
+                <span className="truncate text-lg">{contact.email}</span>
+              </div>
+            )}
+            {contact.phone && (
+              <div className="flex items-center gap-2 text-lg text-muted-foreground opacity-80">
+                <IconPhone className="h-5 w-5 shrink-0" />
+                <span className="truncate text-lg">{contact.phone}</span>
+              </div>
+            )}
           </div>
+
+          {/* LinkedIn */}
+          {contact.linkedIn && (
+            <div className="shrink-0">
+              <a
+                href={contact.linkedIn}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block opacity-80 hover:opacity-100 transition-opacity"
+              >
+                <Icon icon="lineicons:linkedin" width="40" height="40" />
+              </a>
+            </div>
+          )}
         </div>
 
         {/* Actions */}

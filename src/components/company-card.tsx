@@ -19,6 +19,8 @@ import {
 } from "@tabler/icons-react";
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog";
 import { motion } from "framer-motion";
+import { Icon } from "@iconify/react";
+import { toast } from "sonner";
 
 interface CompanyCardProps {
   company: {
@@ -43,6 +45,12 @@ export function CompanyCard({ company, onView, onEdit }: CompanyCardProps) {
     setShowDeleteDialog(false);
   };
 
+  const handleCopyEmail = (e: React.MouseEvent, email: string) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(email);
+    toast.success("Email copied to clipboard");
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -52,14 +60,11 @@ export function CompanyCard({ company, onView, onEdit }: CompanyCardProps) {
     >
       <Card className="group relative overflow-hidden border-border/50 bg-card/50 p-5 backdrop-blur-sm transition-all hover:border-primary/50 hover:shadow-lg">
         {/* Header */}
-        <div className="mb-4 flex items-start justify-between">
+        <div className="flex items-start justify-between">
           <div className="flex-1">
-            <div className="mb-1 flex items-center gap-2">
-              <div className="rounded-lg bg-primary/10 p-2">
-                <IconBuilding className="h-5 w-5 text-primary" />
-              </div>
+            <div className="flex items-center gap-2">
               <div>
-                <h3 className="font-semibold text-base leading-tight">
+                <h3 className="font-semibold text-lg leading-tight">
                   {company.name}
                 </h3>
               </div>
@@ -67,43 +72,39 @@ export function CompanyCard({ company, onView, onEdit }: CompanyCardProps) {
           </div>
         </div>
 
-        {/* Emails */}
-        <div className="mb-3 space-y-1">
-          {company.emails.slice(0, 2).map((email, index) => (
-            <div
-              key={index}
-              className="flex items-center gap-2 text-xs text-muted-foreground"
-            >
-              <IconMail className="h-3.5 w-3.5" />
-              <span className="truncate">{email}</span>
-            </div>
-          ))}
-          {company.emails.length > 2 && (
-            <p className="text-xs text-muted-foreground pl-5">
-              +{company.emails.length - 2} more
-            </p>
-          )}
-        </div>
-
-        {/* LinkedIn */}
-        {company.linkedInProfiles && company.linkedInProfiles.length > 0 && (
-          <div className="mb-3 flex items-center gap-2 text-xs text-muted-foreground">
-            <IconBrandLinkedin className="h-3.5 w-3.5" />
-            <span className="truncate">{company.linkedInProfiles[0]}</span>
+        {/* Emails & LinkedIn */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex-1 space-y-1 min-w-0">
+            {company.emails.slice(0, 2).map((email, index) => (
+              <div
+                key={index}
+                className="flex items-center gap-2 text-lg text-muted-foreground opacity-80 hover:opacity-100 transition-opacity cursor-pointer "
+                onClick={(e) => handleCopyEmail(e, email)}
+              >
+                <IconMail className="h-5 w-5 shrink-0" />
+                <span className="truncate text-lg ">{email}</span>
+              </div>
+            ))}
+            {company.emails.length > 2 && (
+              <p className="text-lg text-muted-foreground pl-5.5">
+                +{company.emails.length - 2} more
+              </p>
+            )}
           </div>
-        )}
 
-        {/* Stats */}
-        <div className="mb-4 flex items-center gap-4 text-xs">
-          <Badge variant="secondary" className="font-normal">
-            <IconUsers className="mr-1 h-3 w-3" />
-            {company.contactCount}{" "}
-            {company.contactCount === 1 ? "contact" : "contacts"}
-          </Badge>
-          <Badge variant="secondary" className="font-normal">
-            <IconBriefcase className="mr-1 h-3 w-3" />
-            {company.jobCount} {company.jobCount === 1 ? "job" : "jobs"}
-          </Badge>
+          {/* LinkedIn */}
+          {company.linkedInProfiles && company.linkedInProfiles.length > 0 && (
+            <div className="shrink-0">
+              <a
+                href={company.linkedInProfiles[0]}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block opacity-80 hover:opacity-100 transition-opacity"
+              >
+                <Icon icon="lineicons:linkedin" width="60" height="60" />
+              </a>
+            </div>
+          )}
         </div>
 
         {/* Actions */}

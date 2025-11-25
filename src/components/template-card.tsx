@@ -78,10 +78,29 @@ export function TemplateCard({ template, onView, onEdit }: TemplateCardProps) {
         onClick={onView}
       >
         {/* Header with Icon */}
-        <div className="mb-3 flex items-start justify-between">
-          <div className="rounded-lg bg-primary/10 p-3">
-            <IconMail className="h-6 w-6 text-primary" />
-          </div>
+
+        {/* Title */}
+        <h3 className="mb-2 line-clamp-1 font-semibold text-base">
+          {template.title}
+        </h3>
+
+        {/* Subject (if exists) */}
+        {template.subject && (
+          <p className="mb-2 line-clamp-1 text-sm text-muted-foreground">
+            <span className="font-medium">Subject:</span> {template.subject}
+          </p>
+        )}
+
+        {/* Body Preview */}
+        <p className="mb-3 line-clamp-2 text-sm text-muted-foreground">
+          {truncateText(template.body, 120)}
+        </p>
+
+        {/* Created Date */}
+        <div className="flex items-start justify-between">
+          <p className="text-xs text-muted-foreground/80">
+            Created {formatDate(template.createdAt)}
+          </p>
           <div className="flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
             <Button
               size="icon"
@@ -118,44 +137,6 @@ export function TemplateCard({ template, onView, onEdit }: TemplateCardProps) {
             </Button>
           </div>
         </div>
-
-        {/* Title */}
-        <h3 className="mb-2 line-clamp-1 font-semibold text-base">
-          {template.title}
-        </h3>
-
-        {/* Subject (if exists) */}
-        {template.subject && (
-          <p className="mb-2 line-clamp-1 text-sm text-muted-foreground">
-            <span className="font-medium">Subject:</span> {template.subject}
-          </p>
-        )}
-
-        {/* Body Preview */}
-        <p className="mb-3 line-clamp-2 text-sm text-muted-foreground">
-          {truncateText(template.body, 120)}
-        </p>
-
-        {/* Tags */}
-        {template.tags && template.tags.length > 0 && (
-          <div className="mb-3 flex flex-wrap gap-1">
-            {template.tags.slice(0, 3).map((tag) => (
-              <Badge key={tag} variant="secondary" className="text-xs">
-                {tag}
-              </Badge>
-            ))}
-            {template.tags.length > 3 && (
-              <Badge variant="secondary" className="text-xs">
-                +{template.tags.length - 3}
-              </Badge>
-            )}
-          </div>
-        )}
-
-        {/* Created Date */}
-        <p className="text-xs text-muted-foreground">
-          Created {formatDate(template.createdAt)}
-        </p>
 
         {/* Delete Confirmation Dialog */}
         <DeleteConfirmationDialog

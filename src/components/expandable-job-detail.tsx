@@ -20,7 +20,11 @@ import {
   IconUser,
   IconMail,
   IconBuilding,
+  IconCalendar,
+  IconLink,
+  IconCopy,
 } from "@tabler/icons-react";
+import { toast } from "sonner";
 
 type Job = {
   _id: Id<"jobs">;
@@ -70,11 +74,15 @@ export function ExpandableJobDetail({
   useOnClickOutside(ref as React.RefObject<HTMLElement>, (event) => {
     // Ignore clicks inside dialogs or select dropdowns (which are in portals)
     const target = event.target as HTMLElement;
-    if (
+
+    // Check if the click target is within a Radix UI portal or other overlay
+    const isInsidePortal =
+      target.closest("[data-radix-portal]") ||
       target.closest('[role="dialog"]') ||
       target.closest('[role="listbox"]') ||
-      target.closest(".radix-select-content")
-    ) {
+      target.closest(".radix-select-content");
+
+    if (isInsidePortal) {
       return;
     }
 
@@ -129,142 +137,90 @@ export function ExpandableJobDetail({
             <motion.div
               layoutId={`job-card-${job._id}`}
               ref={ref}
-              className="flex max-h-[90vh] w-full max-w-2xl cursor-auto flex-col gap-4 overflow-y-auto rounded-xl border bg-background p-6 shadow-2xl"
+              className="flex max-h-[110vh] w-full max-w-4xl cursor-auto flex-col gap-4 overflow-y-auto rounded-xl border bg-background p-6 shadow-2xl"
               style={{ borderRadius: 12 }}
             >
               {/* Header */}
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <motion.h2
-                    layoutId={`job-company-${job._id}`}
-                    className="font-bold text-2xl"
-                  >
-                    {job.companyName}
-                  </motion.h2>
-                  <motion.p
-                    layoutId={`job-title-${job._id}`}
-                    className="text-muted-foreground"
-                  >
-                    {job.title}
-                  </motion.p>
+              <div className="flex flex-col gap-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <motion.h2
+                      layoutId={`job-company-${job._id}`}
+                      className="font-bold text-3xl"
+                    >
+                      {job.companyName}
+                    </motion.h2>
+                    <motion.p
+                      layoutId={`job-title-${job._id}`}
+                      className="text-muted-foreground text-lg mt-1"
+                    >
+                      {job.title}
+                    </motion.p>
+                  </div>
+                  <div className="flex gap-2">
+                    {job.url && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-2"
+                        onClick={() => window.open(job.url, "_blank")}
+                      >
+                        <IconExternalLink className="h-4 w-4" />
+                        Visit Job
+                      </Button>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onEdit(job)}
+                    >
+                      <IconEdit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setShowDeleteDialog(true)}
+                    >
+                      <IconTrash className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={onClose}>
+                      <IconX className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onEdit(job)}
-                  >
-                    <IconEdit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setShowDeleteDialog(true)}
-                  >
-                    <IconTrash className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={onClose}>
-                    <IconX className="h-4 w-4" />
-                  </Button>
+
+                {/* Meta Info Row */}
+                <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                  <Badge variant="outline" className="capitalize">
+                    {job.status}
+                  </Badge>
+
+                  <div className="flex items-center gap-1.5">
+                    <IconCalendar className="h-4 w-4" />
+                    <span>
+                      Added {new Date(job.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+
+                  {job.location && (
+                    <Badge variant="secondary" className="font-normal">
+                      {job.location}
+                    </Badge>
+                  )}
+
+                  {job.remoteType && (
+                    <Badge variant="secondary" className="font-normal">
+                      {job.remoteType}
+                    </Badge>
+                  )}
+
+                  {job.salary && (
+                    <Badge variant="secondary" className="font-normal">
+                      {job.salary}
+                    </Badge>
+                  )}
                 </div>
               </div>
-
-              {/* Badges */}
-              <motion.div
-                layoutId={`job-badges-${job._id}`}
-                className="flex flex-wrap gap-2"
-              >
-                {job.salary && <Badge variant="secondary">{job.salary}</Badge>}
-                {job.remoteType && (
-                  <Badge variant="outline">{job.remoteType}</Badge>
-                )}
-                {job.location && (
-                  <Badge variant="outline">{job.location}</Badge>
-                )}
-              </motion.div>
-
-              {/* AI Assistant Toolbar */}
-              <AIToolbar jobId={job._id} />
-
-              {/* Email DB Link Section */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="rounded-lg border bg-card/50 p-4"
-              >
-                <h3 className="mb-3 font-semibold text-sm">
-                  Linked Contact/Company
-                </h3>
-
-                {contact ? (
-                  <div className="mb-3 space-y-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="rounded-lg bg-primary/10 p-2">
-                          <IconUser className="h-4 w-4 text-primary" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-sm">{contact.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {contact.position && `${contact.position}`}
-                            {contact.company && ` at ${contact.company.name}`}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <IconMail className="h-3.5 w-3.5" />
-                      <a
-                        href={`mailto:${contact.email}`}
-                        className="text-primary hover:underline"
-                      >
-                        {contact.email}
-                      </a>
-                    </div>
-                  </div>
-                ) : company ? (
-                  <div className="mb-3 space-y-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="rounded-lg bg-primary/10 p-2">
-                          <IconBuilding className="h-4 w-4 text-primary" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-sm">{company.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {company.emails.length} email
-                            {company.emails.length !== 1 ? "s" : ""}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    {company.emails.length > 0 && (
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <IconMail className="h-3.5 w-3.5" />
-                        <a
-                          href={`mailto:${company.emails[0]}`}
-                          className="text-primary hover:underline"
-                        >
-                          {company.emails[0]}
-                        </a>
-                        {company.emails.length > 1 && (
-                          <span>+{company.emails.length - 1} more</span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <p className="mb-3 text-sm text-muted-foreground">
-                    No contact or company linked to this job
-                  </p>
-                )}
-
-                <EmailDbSelector
-                  jobId={job._id}
-                  currentContactId={job.contactId}
-                  currentCompanyId={job.emailDbCompanyId}
-                />
-              </motion.div>
 
               {/* Content - Fades in */}
               <motion.div
@@ -273,22 +229,6 @@ export function ExpandableJobDetail({
                 exit={{ opacity: 0, transition: { duration: 0.05 } }}
                 className="space-y-4"
               >
-                {job.url && (
-                  <div>
-                    <h3 className="mb-2 font-semibold text-sm">Job URL</h3>
-                    <a
-                      href={job.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-primary text-sm hover:underline break-all"
-                      title={job.url}
-                    >
-                      <span className="truncate">{job.url}</span>
-                      <IconExternalLink className="h-4 w-4 shrink-0" />
-                    </a>
-                  </div>
-                )}
-
                 {job.notes && (
                   <div>
                     <h3 className="mb-2 font-semibold text-sm">Notes</h3>
@@ -298,20 +238,97 @@ export function ExpandableJobDetail({
                   </div>
                 )}
 
-                <div className="border-t pt-4">
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-muted-foreground">Status</p>
-                      <p className="font-medium capitalize">{job.status}</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Added</p>
-                      <p className="font-medium">
-                        {new Date(job.createdAt).toLocaleDateString()}
-                      </p>
-                    </div>
+                {/* Email DB Link Section */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="rounded-xl border bg-card/50 p-4 transition-colors hover:bg-card/80"
+                >
+                  <div className="mb-4 flex items-center justify-between">
+                    <h3 className="font-semibold text-sm flex items-center gap-2">
+                      <IconLink className="h-4 w-4" />
+                      Linked Connection
+                    </h3>
                   </div>
-                </div>
+
+                  {contact ? (
+                    <div className="flex items-start gap-3">
+                      <div className="rounded-full bg-primary/10 p-2.5">
+                        <IconUser className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-base truncate">
+                          {contact.name}
+                        </p>
+                        <p className="text-sm text-muted-foreground truncate mb-1">
+                          {contact.position && `${contact.position}`}
+                          {contact.company && ` at ${contact.company.name}`}
+                        </p>
+                        <div
+                          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary cursor-pointer transition-colors w-fit"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (contact.email) {
+                              navigator.clipboard.writeText(contact.email);
+                              toast.success("Email copied");
+                            }
+                          }}
+                        >
+                          <IconMail className="h-3.5 w-3.5" />
+                          <span className="truncate">{contact.email}</span>
+                          <IconCopy className="h-3 w-3 opacity-50" />
+                        </div>
+                      </div>
+                    </div>
+                  ) : company ? (
+                    <div className="flex items-start gap-3">
+                      <div className="rounded-full bg-primary/10 p-2.5">
+                        <IconBuilding className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-base truncate">
+                          {company.name}
+                        </p>
+                        <p className="text-sm text-muted-foreground truncate mb-1">
+                          {company.emails.length} email address
+                          {company.emails.length !== 1 ? "es" : ""} found
+                        </p>
+                        {company.emails.length > 0 && (
+                          <div
+                            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary cursor-pointer transition-colors w-fit"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigator.clipboard.writeText(company.emails[0]);
+                              toast.success("Email copied");
+                            }}
+                          >
+                            <IconMail className="h-3.5 w-3.5" />
+                            <span className="truncate">
+                              {company.emails[0]}
+                            </span>
+                            <IconCopy className="h-3 w-3 opacity-50" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-sm text-muted-foreground italic">
+                      No contact or company linked. Select one below to enable
+                      AI features.
+                    </div>
+                  )}
+
+                  <div className="mt-4 pt-4 border-t">
+                    <EmailDbSelector
+                      jobId={job._id}
+                      currentContactId={job.contactId}
+                      currentCompanyId={job.emailDbCompanyId}
+                    />
+                  </div>
+                </motion.div>
+
+                {/* AI Assistant Toolbar */}
+                <AIToolbar jobId={job._id} />
               </motion.div>
             </motion.div>
           </div>
