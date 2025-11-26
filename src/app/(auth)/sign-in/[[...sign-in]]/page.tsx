@@ -45,7 +45,7 @@ export default function SignInPage() {
   };
 
   const handleOAuthSignIn = async (
-    strategy: "oauth_google" | "oauth_linkedin"
+    strategy: "oauth_google" | "oauth_linkedin_oidc"
   ) => {
     if (!isLoaded) return;
 
@@ -90,7 +90,7 @@ export default function SignInPage() {
         </Button>
         <Button
           variant="outline"
-          onClick={() => handleOAuthSignIn("oauth_linkedin")}
+          onClick={() => handleOAuthSignIn("oauth_linkedin_oidc")}
           className="border-zinc-800 bg-zinc-900 hover:bg-zinc-800"
         >
           <IconBrandLinkedin className="mr-2 h-4 w-4" />
@@ -129,7 +129,7 @@ export default function SignInPage() {
             <Label htmlFor="password">Password</Label>
             <Link
               href="/forgot-password"
-              className="text-primary text-sm hover:underline"
+              className="Forgot password? text-sm hover:underline"
             >
               Forgot password?
             </Link>
@@ -159,7 +159,7 @@ export default function SignInPage() {
 
       <p className="text-center text-muted-foreground text-sm">
         Don't have an account?{" "}
-        <Link href="/sign-up" className="text-primary hover:underline">
+        <Link href="/sign-up" className="text-muted-foreground hover:underline">
           Sign up
         </Link>
       </p>

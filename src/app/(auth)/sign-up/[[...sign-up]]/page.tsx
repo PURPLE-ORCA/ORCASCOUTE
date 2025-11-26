@@ -72,7 +72,7 @@ export default function SignUpPage() {
   };
 
   const handleOAuthSignUp = async (
-    strategy: "oauth_google" | "oauth_linkedin"
+    strategy: "oauth_google" | "oauth_linkedin_oidc"
   ) => {
     if (!isLoaded) return;
 
@@ -178,7 +178,7 @@ export default function SignUpPage() {
         </Button>
         <Button
           variant="outline"
-          onClick={() => handleOAuthSignUp("oauth_linkedin")}
+          onClick={() => handleOAuthSignUp("oauth_linkedin_oidc")}
           className="border-zinc-800 bg-zinc-900 hover:bg-zinc-800"
         >
           <IconBrandLinkedin className="mr-2 h-4 w-4" />
@@ -245,7 +245,7 @@ export default function SignUpPage() {
 
       <p className="text-center text-muted-foreground text-sm">
         Already have an account?{" "}
-        <Link href="/sign-in" className="text-primary hover:underline">
+        <Link href="/sign-in" className="text-muted-foreground hover:underline">
           Sign in
         </Link>
       </p>
