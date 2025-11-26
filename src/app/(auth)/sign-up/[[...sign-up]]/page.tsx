@@ -79,8 +79,8 @@ export default function SignUpPage() {
     try {
       await signUp.authenticateWithRedirect({
         strategy,
-        redirectUrl: "/sso-callback",
-        redirectUrlComplete: "/jobs",
+        redirectUrl: `${window.location.origin}/sso-callback`,
+        redirectUrlComplete: `${window.location.origin}/jobs`,
       });
     } catch (err: any) {
       console.error("OAuth error:", err);
