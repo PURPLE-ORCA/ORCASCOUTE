@@ -108,4 +108,6 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## 📄 License
 
-This project is open source and available under the [MIT License](LICENSE).
+This project is licensed under the [Creative Commons Attribution-NonCommercial 4.0 International License](LICENSE).
+
+**TL;DR**: You can view, study, and learn from this code, but you cannot use it for commercial purposes. Attribution is required.
