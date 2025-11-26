@@ -2,7 +2,8 @@
 
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { Id } from "../../convex/_generated/dataModel";
+import { Id, Doc } from "../../convex/_generated/dataModel";
+
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -21,7 +22,7 @@ import { toast } from "sonner";
 interface TemplateDetailViewProps {
   templateId: Id<"email_templates"> | null;
   onClose: () => void;
-  onEdit?: (template: any) => void;
+  onEdit?: (template: Doc<"email_templates">) => void;
 }
 
 export function TemplateDetailView({
@@ -43,9 +44,8 @@ export function TemplateDetailView({
       toast.success("Template deleted");
       setShowDeleteDialog(false);
       onClose();
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete template");
-      console.error(error);
     }
   };
 
@@ -54,7 +54,7 @@ export function TemplateDetailView({
     try {
       await navigator.clipboard.writeText(template.subject);
       toast.success("Subject copied to clipboard");
-    } catch (error) {
+    } catch {
       toast.error("Failed to copy subject");
     }
   };
@@ -64,7 +64,7 @@ export function TemplateDetailView({
     try {
       await navigator.clipboard.writeText(template.body);
       toast.success("Body copied to clipboard");
-    } catch (error) {
+    } catch {
       toast.error("Failed to copy body");
     }
   };
@@ -77,7 +77,7 @@ export function TemplateDetailView({
         : template.body;
       await navigator.clipboard.writeText(content);
       toast.success("Template copied to clipboard");
-    } catch (error) {
+    } catch {
       toast.error("Failed to copy template");
     }
   };
@@ -204,7 +204,6 @@ export function TemplateDetailView({
                       </div>
                     </div>
                   )}
-                  
                 </div>
 
                 {/* Actions Footer */}

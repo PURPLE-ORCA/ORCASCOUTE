@@ -102,7 +102,7 @@ export function ExpandableJobDetail({
       window.addEventListener("keydown", onKeyDown);
       return () => window.removeEventListener("keydown", onKeyDown);
     }
-  }, [job, onClose]);
+  }, [job, onClose, showDeleteDialog]);
 
   const handleDelete = async () => {
     if (!job) return;

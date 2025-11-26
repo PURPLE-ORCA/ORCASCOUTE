@@ -14,7 +14,6 @@ import {
   SelectLabel,
   SelectSeparator,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
 import { AddContactDialog } from "@/components/add-contact-dialog";
 import { AddCompanyDialog } from "@/components/add-company-dialog";
 import { IconPlus, IconX, IconBuilding, IconUser } from "@tabler/icons-react";

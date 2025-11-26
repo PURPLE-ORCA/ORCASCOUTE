@@ -9,7 +9,7 @@ type JobCardContentProps = {
     salary?: string;
     location?: string;
     remoteType?: string;
-  } & Record<string, any>;
+  } & Record<string, unknown>;
 };
 
 export function JobCardContent({ job }: JobCardContentProps) {
