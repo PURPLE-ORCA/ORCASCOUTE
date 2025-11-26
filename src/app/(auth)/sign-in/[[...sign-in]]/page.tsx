@@ -12,7 +12,7 @@ import Link from "next/link";
 
 export default function SignInPage() {
   const { isLoaded, signIn, setActive } = useSignIn();
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -25,7 +25,7 @@ export default function SignInPage() {
 
     try {
       const signInAttempt = await signIn.create({
-        identifier: email,
+        identifier: identifier,
         password,
       });
 
@@ -112,13 +112,13 @@ export default function SignInPage() {
       {/* Email/Password Form */}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="identifier">Email or Username</Label>
           <Input
-            id="email"
-            type="email"
-            placeholder="you@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            id="identifier"
+            type="text"
+            placeholder="you@example.com or username"
+            value={identifier}
+            onChange={(e) => setIdentifier(e.target.value)}
             required
             className="border-zinc-800 bg-zinc-900"
           />
