@@ -16,6 +16,8 @@ export default clerkMiddleware(
   {
     signInUrl: "/sign-in",
     signUpUrl: "/sign-up",
+    afterSignInUrl: "/jobs",
+    afterSignUpUrl: "/jobs",
   }
 );
 
