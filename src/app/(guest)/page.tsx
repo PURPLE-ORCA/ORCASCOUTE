@@ -1,7 +1,6 @@
 "use client";
 
 import { Unauthenticated, Authenticated } from "convex/react";
-import { SignInButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
@@ -26,11 +25,13 @@ export default function Home() {
         </div>
 
         <Unauthenticated>
-          <SignInButton mode="modal">
-            <Button size="lg" className="text-lg">
-              Get Started
-            </Button>
-          </SignInButton>
+          <Button
+            size="lg"
+            className="text-lg"
+            onClick={() => router.push("/sign-in")}
+          >
+            Get Started
+          </Button>
         </Unauthenticated>
 
         <Authenticated>
