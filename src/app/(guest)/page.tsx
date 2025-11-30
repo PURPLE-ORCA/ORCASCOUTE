@@ -69,7 +69,7 @@ export default function Home() {
           <Unauthenticated>
             <Button
               size="lg"
-              className="text-lg text-popover-foreground"
+              className="text-lg text-black dark:text-white"
               onClick={() => router.push("/sign-in")}
             >
               Get Started

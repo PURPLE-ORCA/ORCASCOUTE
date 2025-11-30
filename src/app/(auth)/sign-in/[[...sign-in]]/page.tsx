@@ -52,8 +52,8 @@ export default function SignInPage() {
     try {
       await signIn.authenticateWithRedirect({
         strategy,
-        redirectUrl: `${window.location.origin}/sso-callback`,
-        redirectUrlComplete: `${window.location.origin}/jobs`,
+        redirectUrl: "/sso-callback",
+        redirectUrlComplete: "/jobs",
       });
     } catch (err: any) {
       console.error("OAuth error:", err);
@@ -144,6 +144,9 @@ export default function SignInPage() {
             className="border-zinc-800 bg-zinc-900"
           />
         </div>
+
+        {/* Clerk Captcha */}
+        <div id="clerk-captcha" />
 
         <Button type="submit" className="w-full" disabled={isLoading}>
           {isLoading ? (

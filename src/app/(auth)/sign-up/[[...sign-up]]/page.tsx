@@ -14,6 +14,7 @@ export default function SignUpPage() {
   const { isLoaded, signUp, setActive } = useSignUp();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
   const [verifying, setVerifying] = useState(false);
   const [code, setCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -29,6 +30,7 @@ export default function SignUpPage() {
       await signUp.create({
         emailAddress: email,
         password,
+        username,
       });
 
       await signUp.prepareEmailAddressVerification({
@@ -56,12 +58,41 @@ export default function SignUpPage() {
         code,
       });
 
+      console.log("Sign-up attempt status:", signUpAttempt.status);
+      console.log("Missing fields:", signUpAttempt.missingFields);
+      console.log("Unverified fields:", signUpAttempt.unverifiedFields);
+
       if (signUpAttempt.status === "complete") {
         await setActive({ session: signUpAttempt.createdSessionId });
         router.push("/jobs");
+      } else if (signUpAttempt.status === "missing_requirements") {
+        // Check what's missing and try to complete it
+        const missingFields = signUpAttempt.missingFields || [];
+        console.error("Missing required fields:", missingFields);
+
+        // If only username is missing, we can skip it or set a default
+        if (
+          missingFields.length === 0 ||
+          (missingFields.length === 1 && missingFields[0] === "username")
+        ) {
+          // Try to set the session anyway
+          try {
+            await setActive({ session: signUpAttempt.createdSessionId });
+            router.push("/jobs");
+          } catch {
+            toast.error(
+              "Please complete your profile. Missing: " +
+                missingFields.join(", ")
+            );
+          }
+        } else {
+          toast.error(
+            "Additional information required: " + missingFields.join(", ")
+          );
+        }
       } else {
         console.error("Verification not complete:", signUpAttempt.status);
-        toast.error("Verification failed. Please try again.");
+        toast.error("Verification failed. Status: " + signUpAttempt.status);
       }
     } catch (err: any) {
       console.error("Verification error:", err);
@@ -200,6 +231,19 @@ export default function SignUpPage() {
       {/* Email/Password Form */}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
+          <Label htmlFor="username">Username</Label>
+          <Input
+            id="username"
+            type="text"
+            placeholder="Mohammed"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+            className="border-zinc-800 bg-zinc-900"
+          />
+        </div>
+
+        <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
           <Input
             id="email"
@@ -227,9 +271,6 @@ export default function SignUpPage() {
             Must be at least 8 characters
           </p>
         </div>
-
-        {/* Clerk Captcha */}
-        <div id="clerk-captcha" />
 
         <Button type="submit" className="w-full" disabled={isLoading}>
           {isLoading ? (
