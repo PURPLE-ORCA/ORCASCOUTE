@@ -69,7 +69,7 @@ export default function Home() {
           <Unauthenticated>
             <Button
               size="lg"
-              className="text-lg text-black dark:text-white"
+              className="text-lg"
               onClick={() => router.push("/sign-in")}
             >
               Get Started
@@ -84,7 +84,7 @@ export default function Home() {
         </div>
       <footer>
         <p className="mt-50 text-center text-sm text-muted-foreground">
-          &copy; {new Date().getFullYear()} Orcascoute v1.0 Preview. All rights reserved.
+          &copy; {new Date().getFullYear()} Orcascout v1.0 Preview. All rights reserved.
         </p>
       </footer>
       </div>

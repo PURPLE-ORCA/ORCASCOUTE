@@ -189,7 +189,7 @@ export default function SignUpPage() {
 
   // Sign Up Form
   return (
-    <div className="w-full max-w-md space-y-8 rounded-2xl border border-zinc-800 bg-zinc-950 p-8 shadow-2xl">
+    <div className="w-full max-w-md space-y-8 rounded-2xl border border-zinc-800 p-8 shadow-2xl">
       <div className="text-center">
         <h1 className="font-bold text-3xl">Create an account</h1>
         <p className="mt-2 text-muted-foreground text-sm">
@@ -202,7 +202,7 @@ export default function SignUpPage() {
         <Button
           variant="outline"
           onClick={() => handleOAuthSignUp("oauth_google")}
-          className="border-zinc-800 bg-zinc-900 hover:bg-zinc-800"
+          className="border-zinc-800  hover:bg-zinc-800"
         >
           <IconBrandGoogle className="mr-2 h-4 w-4" />
           Google
@@ -210,7 +210,7 @@ export default function SignUpPage() {
         <Button
           variant="outline"
           onClick={() => handleOAuthSignUp("oauth_linkedin_oidc")}
-          className="border-zinc-800 bg-zinc-900 hover:bg-zinc-800"
+          className="border-zinc-800 hover:bg-zinc-800"
         >
           <IconBrandLinkedin className="mr-2 h-4 w-4" />
           LinkedIn
@@ -222,7 +222,7 @@ export default function SignUpPage() {
           <span className="w-full border-t border-zinc-800" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-zinc-950 px-2 text-muted-foreground">
+          <span className="bg-zinc-950 px-2 text-white ">
             Or continue with
           </span>
         </div>
@@ -239,7 +239,7 @@ export default function SignUpPage() {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
-            className="border-zinc-800 bg-zinc-900"
+            className="border-zinc-800"
           />
         </div>
 
@@ -252,7 +252,7 @@ export default function SignUpPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="border-zinc-800 bg-zinc-900"
+            className="border-zinc-800"
           />
         </div>
 
@@ -265,7 +265,7 @@ export default function SignUpPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="border-zinc-800 bg-zinc-900"
+            className="border-zinc-800"
           />
           <p className="text-muted-foreground text-xs">
             Must be at least 8 characters

@@ -70,7 +70,7 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="w-full max-w-md space-y-8 rounded-2xl border border-zinc-800 bg-zinc-950 p-8 shadow-2xl">
+    <div className="w-full max-w-md space-y-8 rounded-2xl border border-zinc-800 p-8 shadow-2xl">
       <div className="text-center">
         <h1 className="font-bold text-3xl">Welcome back</h1>
         <p className="mt-2 text-muted-foreground text-sm">
@@ -83,7 +83,7 @@ export default function SignInPage() {
         <Button
           variant="outline"
           onClick={() => handleOAuthSignIn("oauth_google")}
-          className="border-zinc-800 bg-zinc-900 hover:bg-zinc-800"
+          className="border-zinc-800  hover:bg-zinc-800"
         >
           <IconBrandGoogle className="mr-2 h-4 w-4" />
           Google
@@ -91,7 +91,7 @@ export default function SignInPage() {
         <Button
           variant="outline"
           onClick={() => handleOAuthSignIn("oauth_linkedin_oidc")}
-          className="border-zinc-800 bg-zinc-900 hover:bg-zinc-800"
+          className="border-zinc-800  hover:bg-zinc-800"
         >
           <IconBrandLinkedin className="mr-2 h-4 w-4" />
           LinkedIn
@@ -103,7 +103,7 @@ export default function SignInPage() {
           <span className="w-full border-t border-zinc-800" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-zinc-950 px-2 text-muted-foreground">
+          <span className="bg-zinc-950 px-2 text-white">
             Or continue with
           </span>
         </div>
@@ -120,7 +120,7 @@ export default function SignInPage() {
             value={identifier}
             onChange={(e) => setIdentifier(e.target.value)}
             required
-            className="border-zinc-800 bg-zinc-900"
+            className="border-zinc-800 "
           />
         </div>
 
@@ -141,7 +141,7 @@ export default function SignInPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="border-zinc-800 bg-zinc-900"
+            className="border-zinc-800 "
           />
         </div>
 
