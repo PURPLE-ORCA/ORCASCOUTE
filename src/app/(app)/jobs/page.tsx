@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/kanban";
 import { JobCardContent } from "@/components/job-card-content";
 import { AddJobDialog } from "@/components/add-job-dialog";
-import { ExpandableJobDetail } from "@/components/expandable-job-detail";
+import { JobDetailSheet } from "@/components/job-detail-sheet";
 import { JobDetailDialog } from "@/components/job-detail-dialog";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -145,8 +145,9 @@ export default function JobsPage() {
         </div>
       )}
 
-      <ExpandableJobDetail
+      <JobDetailSheet
         job={selectedJob}
+        isOpen={!!selectedJob}
         onClose={() => setSelectedJobId(null)}
         onEdit={(job) => {
           setSelectedJobId(null);
