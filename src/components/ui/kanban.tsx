@@ -355,7 +355,7 @@ export const KanbanProvider = <
       >
         <div
           className={cn(
-            "grid size-full auto-cols-fr grid-flow-col gap-4",
+            "grid size-full auto-cols-[minmax(300px,1fr)] grid-flow-col gap-4 overflow-x-auto pb-4",
             className
           )}
         >

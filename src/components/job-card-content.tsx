@@ -19,29 +19,21 @@ export function JobCardContent({ job }: JobCardContentProps) {
     <div className="flex flex-col gap-2">
       <div>
         <motion.p
-          layoutId={`job-company-${jobId}`}
-          className="font-semibold text-lg"
+          className="font-semibold text-base truncate"
+          title={job.companyName}
         >
           {job.companyName}
         </motion.p>
         <motion.p
-          layoutId={`job-title-${jobId}`}
-          className="text-muted-foreground text-base"
+          className="text-muted-foreground text-sm line-clamp-2"
+          title={job.title}
         >
           {job.title}
         </motion.p>
       </div>
 
       {(job.salary || job.remoteType) && (
-        <motion.div
-          layoutId={`job-badges-${jobId}`}
-          className="flex flex-wrap gap-1"
-        >
-          {job.salary && (
-            <Badge variant="secondary" className="text-xs">
-              {job.salary}
-            </Badge>
-          )}
+        <motion.div className="flex flex-wrap gap-1">
           {job.remoteType && (
             <Badge variant="outline" className="text-xs">
               {job.remoteType}

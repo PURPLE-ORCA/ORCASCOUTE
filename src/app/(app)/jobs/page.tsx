@@ -24,6 +24,9 @@ const COLUMNS = [
   { id: "applied", name: "Applied" },
   { id: "interview", name: "Interview" },
   { id: "offer", name: "Offer" },
+  { id: "rejected", name: "Rejected" },
+  { id: "ghosted", name: "Ghosted" },
+  { id: "archived", name: "Archived" },
 ];
 
 export default function JobsPage() {
