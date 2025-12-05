@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/kanban";
 import { JobCardContent } from "@/components/job-card-content";
 import { AddJobDialog } from "@/components/add-job-dialog";
-import { ExpandableJobDetail } from "@/components/expandable-job-detail";
+import { JobDetailSheet } from "@/components/job-detail-sheet";
 import { JobDetailDialog } from "@/components/job-detail-dialog";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -24,6 +24,9 @@ const COLUMNS = [
   { id: "applied", name: "Applied" },
   { id: "interview", name: "Interview" },
   { id: "offer", name: "Offer" },
+  { id: "rejected", name: "Rejected" },
+  { id: "ghosted", name: "Ghosted" },
+  { id: "archived", name: "Archived" },
 ];
 
 export default function JobsPage() {
@@ -142,8 +145,9 @@ export default function JobsPage() {
         </div>
       )}
 
-      <ExpandableJobDetail
+      <JobDetailSheet
         job={selectedJob}
+        isOpen={!!selectedJob}
         onClose={() => setSelectedJobId(null)}
         onEdit={(job) => {
           setSelectedJobId(null);
